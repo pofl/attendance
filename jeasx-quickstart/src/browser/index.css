@@ -1,0 +1,260 @@
+/* This file is an example. Delete it at will. */
+
+@view-transition {
+  navigation: auto;
+}
+
+table {
+  width: 100%;
+}
+
+.wrap {
+  flex-wrap: wrap;
+}
+
+.active {
+  font-weight: bold;
+}
+
+/* Classless.css v1.1 (Tiny Inline Version)*/
+/* Tiny Reset for block elements  */
+* {
+  box-sizing: border-box;
+  border-spacing: 0;
+}
+header,
+footer,
+figure,
+video,
+details,
+blockquote,
+ul,
+ol,
+dl,
+fieldset,
+pre,
+pre > code,
+nav {
+  display: block;
+  margin: 0.5rem 0 1rem;
+  width: 100%;
+  overflow: auto hidden;
+  text-align: left;
+}
+video,
+summary,
+input,
+select {
+  outline: none;
+}
+html {
+  font: 12pt/1.6 "Open Sans", Helvetica, sans-serif;
+}
+body {
+  position: relative;
+  margin: auto;
+  padding: 3.1rem 0.6rem 0;
+  max-width: 50rem;
+  overflow-x: hidden;
+  color: #433;
+}
+body > footer {
+  margin: 10rem 0 0;
+}
+
+/* clickable stuff */
+a,
+summary,
+button,
+select {
+  cursor: pointer;
+  color: #07c;
+}
+a {
+  text-decoration: underline solid 1.5px #d1d1d1;
+  text-underline-position: under;
+}
+a[href^="#"] {
+  text-decoration: none;
+}
+a:hover {
+  border-color: #088;
+  color: #088;
+}
+
+/* common */
+td,
+th,
+pre > code {
+  padding: 0.5rem 0.8rem;
+}
+.card,
+details {
+  padding: 0 0.6rem;
+}
+code,
+kbd,
+samp {
+  padding: 0.2rem;
+  font: 0.9em/1.4 monospace;
+}
+code,
+kbd,
+samp,
+nav,
+.card {
+  border-radius: 0.3em;
+  background: #f4f5f6;
+}
+kbd,
+.card,
+details[open] {
+  border: 1px solid #d1d1d1;
+}
+td,
+th,
+figcaption,
+caption,
+.card {
+  font-size: 95%;
+}
+td,
+th,
+hr {
+  border: 0;
+  border-bottom: 0.1rem solid #d1d1d1;
+}
+
+/* lists */
+ul,
+ol {
+  padding-top: 0.5rem;
+}
+li,
+dd {
+  margin-bottom: 0.5rem;
+}
+dt {
+  font-weight: bold;
+}
+
+/* headings */
+h1,
+h2,
+h3,
+h4,
+h5 {
+  margin: 1.5em 0 0em;
+  line-height: 1.2em;
+}
+h1 + h2,
+h2 + h3,
+h3 + h4,
+h4 + h5 {
+  margin-top: 0.5em;
+}
+h1 {
+  font-weight: 300;
+  font-size: 2.2em;
+}
+h2 {
+  font-weight: 300;
+  font-size: 2em;
+  font-variant-caps: small-caps;
+}
+h3 {
+  font-weight: 400;
+  font-size: 1.5em;
+}
+h4 {
+  font-weight: 700;
+  font-size: 1.1em;
+}
+h5 {
+  color: #888;
+  font-weight: 400;
+  font-size: 1.2em;
+}
+h6 {
+  display: inline;
+  font-weight: 600;
+  font-size: 1em;
+}
+h6 + p {
+  display: inline;
+}
+
+/* tables */
+td,
+th {
+  text-align: right;
+  white-space: nowrap;
+}
+td:first-child,
+th:first-child {
+  text-align: left;
+}
+tr:hover {
+  background-color: #f4f5f6;
+}
+
+/* figures */
+img,
+svg {
+  vertical-align: text-top;
+  max-width: 100%;
+}
+p > img:not(:only-child) {
+  float: right;
+  margin: 0 0 0.5em 0.5em;
+}
+figure > img {
+  display: block;
+  margin: 0.5em auto;
+}
+figcaption,
+caption {
+  margin-bottom: 1rem;
+  color: #888;
+}
+figure > *:not(:last-child) {
+  margin: 0 0 0.4rem;
+}
+
+/*code*/
+pre > code {
+  margin: 0;
+  border-left: 0.4rem solid #088;
+}
+
+/* misc */
+blockquote {
+  border-left: 0.3rem solid #d1d1d1;
+  padding: 1rem 1.5rem;
+  font-style: italic;
+}
+input {
+  font-size: 1em;
+}
+p > cite:before {
+  content: " (";
+}
+p > cite:after {
+  content: ") ";
+}
+
+/* grid */
+.row {
+  display: flex;
+  align-items: stretch;
+  margin: 0.5rem -0.5rem;
+}
+.row [class*="col"] {
+  flex: 1 1 100%;
+  padding: 0 0.5rem;
+}
+@media (max-width: 40em) {
+  .row {
+    flex-direction: column !important;
+  }
+}
