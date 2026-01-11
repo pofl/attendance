@@ -1,6 +1,7 @@
 import { config } from "dotenv";
 import postgres from "postgres";
-import { Migration, MigrationRunner } from "./migrate";
+import type { Migration } from "./migrate.js";
+import { MigrationRunner } from "./migrate.js";
 
 config();
 
