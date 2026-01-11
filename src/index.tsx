@@ -9,6 +9,7 @@ const Layout: FC = (props) => {
     <html>
       <head>
          <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js"></script>
+         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css"></link>
       </head>
       <body>{props.children}</body>
     </html>

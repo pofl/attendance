@@ -7,46 +7,27 @@ config();
 
 const migrations: Migration[] = [
   {
-    id: "20260111-enable-pgcrypto",
+    id: "20260111-create-table-attendees",
     sql: `
-      CREATE EXTENSION IF NOT EXISTS "pgcrypto";
-    `,
-  },
-  {
-    id: "20260111-create-merchants",
-    sql: `
-      CREATE TABLE IF NOT EXISTS merchants (
+      CREATE TABLE IF NOT EXISTS attendees (
         id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-        external_id UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
+
+        created_at TIMESTAMP DEFAULT timezone('UTC', NOW()),
+        updated_at TIMESTAMP DEFAULT timezone('UTC', NOW()),
+
         name TEXT NOT NULL,
-        created_at TIMESTAMP DEFAULT timezone('UTC', NOW()),
-        updated_at TIMESTAMP DEFAULT timezone('UTC', NOW())
+        locale TEXT NOT NULL,
+        arrival_date TIMESTAMP,
+        arrival_flight TEXT,
+        departure_date TIMESTAMP,
+        departure_flight TEXT,
+        passport_status enum_passport_status NOT NULL,
+        visa_status enum_visa_status NOT NULL,
+        dietary_requirements TEXT
       );
-    `,
-  },
-  {
-    id: "20260111-create-orders",
-    sql: `
-      CREATE TABLE IF NOT EXISTS orders (
-        id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-        external_id UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
-        merchant_id UUID NOT NULL REFERENCES merchants(external_id) ON DELETE CASCADE,
-        name TEXT NOT NULL,
-        created_at TIMESTAMP DEFAULT timezone('UTC', NOW()),
-        updated_at TIMESTAMP DEFAULT timezone('UTC', NOW())
-      );
-    `,
-  },
-  {
-    id: "20260111-create-subscriptions",
-    sql: `
-      CREATE TABLE IF NOT EXISTS subscriptions (
-        id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-        external_id UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
-        order_id BIGINT NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
-        created_at TIMESTAMP DEFAULT timezone('UTC', NOW()),
-        updated_at TIMESTAMP DEFAULT timezone('UTC', NOW())
-      );
+
+      CREATE ENUM IF NOT EXISTS enum_passport_status AS ('valid', 'pending', 'none');
+      CREATE ENUM IF NOT EXISTS enum_visa_status AS ('obtained', 'pending', 'none');
     `,
   },
 ];
