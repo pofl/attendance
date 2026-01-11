@@ -1,4 +1,4 @@
-import type { UUID } from "crypto";
+import { UUID } from "crypto";
 import postgres from "postgres";
 
 export async function recreateTables(db: postgres.Sql, merchant_id: UUID, order_id: UUID) {

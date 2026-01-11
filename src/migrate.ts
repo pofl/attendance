@@ -36,10 +36,9 @@ export class MigrationRunner {
       await tx.unsafe(migration.sql);
 
       // Record the migration as completed
-      await tx.unsafe(
-        "INSERT INTO migrations (id) VALUES ($1)",
-        [migration.id]
-      );
+      await tx`
+        INSERT INTO migrations (id) VALUES (${migration.id})
+      `;
     });
 
     console.log(`Migration completed: ${migration.id}`);
