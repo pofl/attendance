@@ -20,7 +20,8 @@ const migrations = [
         departure_flight TEXT,
         passport_status enum_passport_status NOT NULL,
         visa_status enum_visa_status NOT NULL,
-        dietary_requirements TEXT
+        dietary_requirements TEXT,
+        CONSTRAINT attendees_name_unique UNIQUE (name)
       );
 
       CREATE ENUM IF NOT EXISTS enum_passport_status AS ('valid', 'pending', 'none');
