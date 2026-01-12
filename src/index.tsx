@@ -4,7 +4,7 @@ import { config } from "dotenv";
 import { Hono } from "hono";
 import type { FC } from "hono/jsx";
 import postgres from "postgres";
-import { getAttendeeByName, upsertAttendee, type Attendee, type AttendeeRecord } from "./repository.js";
+import { getAllAttendees, getAttendeeByName, upsertAttendee, type Attendee, type AttendeeRecord } from "./repository.js";
 
 config();
 const db = postgres(process.env.PG_URI!);
@@ -184,6 +184,77 @@ app.put("/attendees/:name", async (c) => {
   } catch (e) {
     console.error(e);
     return c.html(<p>Error saving attendee</p>, 500);
+  }
+});
+
+const AttendeePage: FC<{ attendee: AttendeeRecord }> = ({ attendee }) => {
+  return (
+    <Layout>
+      <h1>Attendee: {attendee.name}</h1>
+      <AttendeeForm attendee={attendee} />
+    </Layout>
+  );
+};
+
+app.get("/attendee/:name", async (c) => {
+  const name = c.req.param("name");
+  try {
+    const attendee = await getAttendeeByName(db, name);
+    const record: AttendeeRecord = attendee ?? {
+      id: 0,
+      created_at: new Date(),
+      updated_at: new Date(),
+      name,
+      locale: "",
+      arrival_date: null,
+      arrival_flight: null,
+      departure_date: null,
+      departure_flight: null,
+      passport_status: "none",
+      visa_status: "none",
+      dietary_requirements: null,
+    };
+    return c.html(<AttendeePage attendee={record} />);
+  } catch (e) {
+    console.error(e);
+    return c.html(
+      <Layout>
+        <p>Error loading attendee</p>
+      </Layout>,
+      500
+    );
+  }
+});
+
+const CockpitPage: FC<{ attendees: AttendeeRecord[] }> = ({ attendees }) => {
+  return (
+    <Layout>
+      <h1>Cockpit - All Attendees</h1>
+      {attendees.length === 0 ? (
+        <p>No attendees found.</p>
+      ) : (
+        attendees.map((attendee) => (
+          <div key={attendee.id} style={{ marginBottom: "2rem" }}>
+            <AttendeeForm attendee={attendee} />
+          </div>
+        ))
+      )}
+    </Layout>
+  );
+};
+
+app.get("/cockpit", async (c) => {
+  try {
+    const attendees = await getAllAttendees(db);
+    return c.html(<CockpitPage attendees={attendees} />);
+  } catch (e) {
+    console.error(e);
+    return c.html(
+      <Layout>
+        <p>Error loading attendees</p>
+      </Layout>,
+      500
+    );
   }
 });
 

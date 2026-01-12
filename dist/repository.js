@@ -50,6 +50,20 @@ function parseAttendeeRecord(row) {
         dietary_requirements: row.dietary_requirements,
     };
 }
+export async function getAllAttendees(db) {
+    try {
+        const result = await db `
+      SELECT *
+      FROM attendees
+      ORDER BY name ASC
+    `;
+        return result.map((row) => parseAttendeeRecord(row));
+    }
+    catch (error) {
+        console.error("Error getting all attendees:", error);
+        throw error;
+    }
+}
 export async function getAttendeeByName(db, name) {
     try {
         const result = await db `

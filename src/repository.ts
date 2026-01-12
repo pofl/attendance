@@ -80,6 +80,20 @@ function parseAttendeeRecord(row: Record<string, unknown>): AttendeeRecord {
   };
 }
 
+export async function getAllAttendees(db: postgres.Sql): Promise<AttendeeRecord[]> {
+  try {
+    const result = await db`
+      SELECT *
+      FROM attendees
+      ORDER BY name ASC
+    `;
+    return result.map((row) => parseAttendeeRecord(row as Record<string, unknown>));
+  } catch (error) {
+    console.error("Error getting all attendees:", error);
+    throw error;
+  }
+}
+
 export async function getAttendeeByName(db: postgres.Sql, name: string): Promise<AttendeeRecord | null> {
   try {
     const result = await db`

@@ -4,7 +4,7 @@ import { serveStatic } from "@hono/node-server/serve-static";
 import { config } from "dotenv";
 import { Hono } from "hono";
 import postgres from "postgres";
-import { getAttendeeByName, upsertAttendee } from "./repository.js";
+import { getAllAttendees, getAttendeeByName, upsertAttendee } from "./repository.js";
 config();
 const db = postgres(process.env.PG_URI);
 const app = new Hono();
@@ -83,6 +83,47 @@ app.put("/attendees/:name", async (c) => {
     catch (e) {
         console.error(e);
         return c.html(_jsx("p", { children: "Error saving attendee" }), 500);
+    }
+});
+const AttendeePage = ({ attendee }) => {
+    return (_jsxs(Layout, { children: [_jsxs("h1", { children: ["Attendee: ", attendee.name] }), _jsx(AttendeeForm, { attendee: attendee })] }));
+};
+app.get("/attendee/:name", async (c) => {
+    const name = c.req.param("name");
+    try {
+        const attendee = await getAttendeeByName(db, name);
+        const record = attendee ?? {
+            id: 0,
+            created_at: new Date(),
+            updated_at: new Date(),
+            name,
+            locale: "",
+            arrival_date: null,
+            arrival_flight: null,
+            departure_date: null,
+            departure_flight: null,
+            passport_status: "none",
+            visa_status: "none",
+            dietary_requirements: null,
+        };
+        return c.html(_jsx(AttendeePage, { attendee: record }));
+    }
+    catch (e) {
+        console.error(e);
+        return c.html(_jsx(Layout, { children: _jsx("p", { children: "Error loading attendee" }) }), 500);
+    }
+});
+const CockpitPage = ({ attendees }) => {
+    return (_jsxs(Layout, { children: [_jsx("h1", { children: "Cockpit - All Attendees" }), attendees.length === 0 ? (_jsx("p", { children: "No attendees found." })) : (attendees.map((attendee) => (_jsx("div", { style: { marginBottom: "2rem" }, children: _jsx(AttendeeForm, { attendee: attendee }) }, attendee.id))))] }));
+};
+app.get("/cockpit", async (c) => {
+    try {
+        const attendees = await getAllAttendees(db);
+        return c.html(_jsx(CockpitPage, { attendees: attendees }));
+    }
+    catch (e) {
+        console.error(e);
+        return c.html(_jsx(Layout, { children: _jsx("p", { children: "Error loading attendees" }) }), 500);
     }
 });
 serve({
