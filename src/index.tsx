@@ -5,7 +5,7 @@ import { Hono } from "hono";
 import postgres from "postgres";
 import { AttendeeForm } from "./components/index.js";
 import { AttendeePage, CockpitPage, IndexPage, Layout } from "./pages/index.js";
-import { getAllAttendees, getAttendeeByName, upsertAttendee, type Attendee, type AttendeeRecord } from "./repository.js";
+import { getAllAttendees, getAttendeeByName, upsertAttendee, type Attendee } from "./repository.js";
 
 config();
 const db = postgres(process.env.PG_URI!);
@@ -35,24 +35,13 @@ app.get("/part/attendees/:name", async (c) => {
   const name = c.req.param("name");
   try {
     const attendee = await getAttendeeByName(db, name);
-    const record: AttendeeRecord = attendee ?? {
-      id: 0,
-      created_at: new Date(),
-      updated_at: new Date(),
-      name,
-      locale: "",
-      arrival_date: null,
-      arrival_flight: null,
-      departure_date: null,
-      departure_flight: null,
-      passport_status: "none",
-      visa_status: "none",
-      dietary_requirements: null,
-    };
-    return c.html(<AttendeeForm attendee={record} />);
+    if (!attendee) {
+      return c.html(<p class="error">Attendee not found: {name}</p>, 404);
+    }
+    return c.html(<AttendeeForm attendee={attendee} />);
   } catch (e) {
     console.error(e);
-    return c.html(<p>Error loading attendee</p>, 500);
+    return c.html(<p class="error">Error loading attendee</p>, 500);
   }
 });
 
@@ -91,26 +80,21 @@ app.get("/attendees/:name", async (c) => {
   const name = c.req.param("name");
   try {
     const attendee = await getAttendeeByName(db, name);
-    const record: AttendeeRecord = attendee ?? {
-      id: 0,
-      created_at: new Date(),
-      updated_at: new Date(),
-      name,
-      locale: "",
-      arrival_date: null,
-      arrival_flight: null,
-      departure_date: null,
-      departure_flight: null,
-      passport_status: "none",
-      visa_status: "none",
-      dietary_requirements: null,
-    };
-    return c.html(<AttendeePage attendee={record} />);
+    if (!attendee) {
+      return c.html(
+        <Layout>
+          <h1>Attendee Not Found</h1>
+          <p class="error">No attendee found with name: {name}</p>
+        </Layout>,
+        404
+      );
+    }
+    return c.html(<AttendeePage attendee={attendee} />);
   } catch (e) {
     console.error(e);
     return c.html(
       <Layout>
-        <p>Error loading attendee</p>
+        <p class="error">Error loading attendee</p>
       </Layout>,
       500
     );
@@ -125,10 +109,37 @@ app.get("/cockpit", async (c) => {
     console.error(e);
     return c.html(
       <Layout>
-        <p>Error loading attendees</p>
+        <p class="error">Error loading attendees</p>
       </Layout>,
       500
     );
+  }
+});
+
+app.post("/cockpit/attendees", async (c) => {
+  const formData = await c.req.parseBody();
+  const name = (formData.name as string)?.trim();
+  if (!name) {
+    return c.redirect("/cockpit");
+  }
+  try {
+    // Create new attendee with default values
+    const attendee: Attendee = {
+      name,
+      locale: "en_US",
+      arrival_date: null,
+      arrival_flight: null,
+      departure_date: null,
+      departure_flight: null,
+      passport_status: "none",
+      visa_status: "none",
+      dietary_requirements: null,
+    };
+    await upsertAttendee(db, attendee);
+    return c.redirect(`/attendees/${encodeURIComponent(name)}`);
+  } catch (e) {
+    console.error(e);
+    return c.redirect("/cockpit");
   }
 });
 
