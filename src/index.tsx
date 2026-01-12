@@ -24,14 +24,14 @@ app.post("/attendee", async (c) => {
   if (!name) {
     return c.redirect("/");
   }
-  return c.redirect(`/attendee/${encodeURIComponent(name)}`);
+  return c.redirect(`/attendees/${encodeURIComponent(name)}`);
 });
 
 app.get("/hello", (c) => {
   return c.html(<p>"Hello Hono!"</p>);
 });
 
-app.get("/part/attendee/:name", async (c) => {
+app.get("/part/attendees/:name", async (c) => {
   const name = c.req.param("name");
   try {
     const attendee = await getAttendeeByName(db, name);
@@ -87,7 +87,7 @@ app.put("/attendees/:name", async (c) => {
   }
 });
 
-app.get("/attendee/:name", async (c) => {
+app.get("/attendees/:name", async (c) => {
   const name = c.req.param("name");
   try {
     const attendee = await getAttendeeByName(db, name);
