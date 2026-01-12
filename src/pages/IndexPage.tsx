@@ -7,7 +7,7 @@ export const IndexPage: FC<{ locale: Locale }> = ({ locale }) => {
   return (
     <Layout locale={locale} currentPath="/">
       <h1>{t.indexPage.title}</h1>
-      <form action="/attendee" method="post" class="form-card">
+      <form action="/attendee" method="post" class="card">
         <label>
           {t.indexPage.enterName}:
           <input type="text" name="name" placeholder={t.indexPage.namePlaceholder} required autofocus />

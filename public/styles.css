@@ -73,8 +73,8 @@ li {
   margin-bottom: 0.25rem;
 }
 
-/* Forms */
-.form-card {
+/* Cards */
+.card {
   background: var(--color-bg-card);
   padding: 1.5rem;
   border-radius: var(--radius);
@@ -157,16 +157,6 @@ button[type="submit"] {
   margin-top: 0.5rem;
 }
 
-/* Cards */
-.card {
-  background: var(--color-bg-card);
-  padding: 1.5rem;
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  border: 1px solid var(--color-border);
-  margin-bottom: 1rem;
-}
-
 /* Utilities */
 .text-muted {
   color: var(--color-text-muted);
@@ -187,13 +177,6 @@ button[type="submit"] {
   padding: 1rem;
   border-radius: var(--radius);
   margin-bottom: 1rem;
-}
-
-.card .form-card {
-  box-shadow: none;
-  border: none;
-  padding: 0;
-  margin-top: 1rem;
 }
 
 .mt-1 { margin-top: 0.5rem; }
@@ -261,12 +244,6 @@ button[type="submit"] {
 
 .accordion-content {
   padding: 0 1.5rem 1.5rem;
-}
-
-.accordion-content .form-card {
-  box-shadow: none;
-  border: none;
-  padding: 1rem 0 0;
 }
 
 /* Language Toggle */

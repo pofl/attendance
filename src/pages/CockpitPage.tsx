@@ -4,6 +4,27 @@ import { getTranslations, type Locale } from "../i18n.js";
 import type { AttendeeRecord } from "../repository.js";
 import { Layout } from "./Layout.js";
 
+const AttendeeAccordion: FC<{ attendee: AttendeeRecord; locale: Locale }> = ({ attendee, locale }) => (
+  <details key={attendee.id} class="accordion">
+    <summary class="accordion-header">{attendee.name}</summary>
+    <div class="accordion-content">
+      <AttendeeForm attendee={attendee} locale={locale} />
+    </div>
+  </details>
+);
+
+const AttendeeList: FC<{ attendees: AttendeeRecord[]; locale: Locale; noAttendeesText: string }> = ({ attendees, locale, noAttendeesText }) => (
+  attendees.length === 0 ? (
+    <p>{noAttendeesText}</p>
+  ) : (
+    <>
+      {attendees.map((attendee) => (
+        <AttendeeAccordion key={attendee.id} attendee={attendee} locale={locale} />
+      ))}
+    </>
+  )
+);
+
 export const CockpitPage: FC<{ attendees: AttendeeRecord[]; locale: Locale }> = ({ attendees, locale }) => {
   const t = getTranslations(locale);
   return (
@@ -12,7 +33,7 @@ export const CockpitPage: FC<{ attendees: AttendeeRecord[]; locale: Locale }> = 
 
       <section class="card mb-3">
         <h2>{t.cockpitPage.createNew}</h2>
-        <form method="post" action="/cockpit/attendees" class="form-card">
+        <form method="post" action="/cockpit/attendees">
           <label>
             {t.cockpitPage.name}:
             <input type="text" name="name" required placeholder={t.cockpitPage.namePlaceholder} />
@@ -27,12 +48,7 @@ export const CockpitPage: FC<{ attendees: AttendeeRecord[]; locale: Locale }> = 
           <p>{t.cockpitPage.noAttendees}</p>
         ) : (
           attendees.map((attendee) => (
-            <details key={attendee.id} class="accordion">
-              <summary class="accordion-header">{attendee.name}</summary>
-              <div class="accordion-content">
-                <AttendeeForm attendee={attendee} locale={locale} />
-              </div>
-            </details>
+            <AttendeeAccordion key={attendee.id} attendee={attendee} locale={locale} />
           ))
         )}
       </section>
