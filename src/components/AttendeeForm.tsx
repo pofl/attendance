@@ -11,8 +11,6 @@ export const AttendeeForm: FC<{ attendee: AttendeeRecord; locale?: string }> = (
   const t = getTranslations(locale ?? attendee.locale ?? "en_US").attendeeForm;
   return (
     <form hx-put={`/attendees/${encodeURIComponent(attendee.name)}`} hx-swap="outerHTML">
-      <h2>{t.editTitle}: {attendee.name}</h2>
-
       <label>
         {t.locale}:
         <select name="locale">

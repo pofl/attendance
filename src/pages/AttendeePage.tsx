@@ -9,7 +9,10 @@ export const AttendeePage: FC<{ attendee: AttendeeRecord; locale: Locale }> = ({
   return (
     <Layout locale={locale} currentPath={`/attendees/${encodeURIComponent(attendee.name)}`}>
       <h1>{t.attendeePage.title}: {attendee.name}</h1>
-      <AttendeeForm attendee={attendee} locale={locale} />
+      <article class="card">
+        <h2>{t.attendeeForm.editTitle}: {attendee.name}</h2>
+        <AttendeeForm attendee={attendee} locale={locale} />
+      </article>
     </Layout>
   );
 };
