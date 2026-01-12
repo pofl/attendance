@@ -13,7 +13,7 @@ const Layout = (props) => {
 const Top = (props) => {
     return (_jsxs(Layout, { children: [_jsx("h1", { children: "Hello Hono!" }), _jsx("ul", { children: props.messages.map((message) => {
                     return _jsxs("li", { children: [message, "!!"] });
-                }) }), _jsx("button", { "hx-get": "/hello", "hx-target": "body", "hx-swap": "afterend", children: "Load" })] }));
+                }) }), _jsx("button", { "hx-get": "/hello", "hx-target": "body", "hx-swap": "afterend", children: "Load" }), _jsx("div", { "hx-get": "/part/attendee/Florian", "hx-trigger": "load", "hx-swap": "innerHTML", children: "Florian" })] }));
 };
 app.get("/", (c) => {
     const messages = ["Good Morning", "Good Evening", "Good Night"];

@@ -32,6 +32,7 @@ const Top: FC<{ messages: string[] }> = (props) => {
         })}
       </ul>
       <button hx-get="/hello" hx-target="body" hx-swap="afterend">Load</button>
+      <div hx-get="/part/attendee/Florian" hx-trigger="load" hx-swap="innerHTML">Florian</div>
     </Layout>
   );
 };

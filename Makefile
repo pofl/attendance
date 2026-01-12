@@ -9,3 +9,6 @@ build:
 
 start:
 	npm start
+
+migrate:
+	node src/run-migrate.js
