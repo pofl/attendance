@@ -25,7 +25,7 @@ import { Layout } from "./pages/Layout.js";
 
 ### Styling
 - No global form styling—use opt-in classes (e.g., `.form-card`)
-- Prefer utility classes for simple spacing/layout
+- Prefer utility classes for simple  but proper classes for reusable components
 - Keep components style-agnostic
 
 ### Forms
