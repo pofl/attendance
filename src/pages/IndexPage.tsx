@@ -1,21 +1,17 @@
 import type { FC } from "hono/jsx";
 import { Layout } from "./Layout.js";
 
-export const IndexPage: FC<{ messages: string[] }> = (props) => {
+export const IndexPage: FC = () => {
   return (
     <Layout>
-      <h1>Hello Hono!</h1>
-      <ul>
-        {props.messages.map((message) => {
-          return <li>{message}!!</li>;
-        })}
-      </ul>
-      <button hx-get="/hello" hx-swap="afterend">
-        Load
-      </button>
-      <div hx-get="/part/attendee/Florian" hx-trigger="load" hx-swap="innerHTML">
-        Florian
-      </div>
+      <h1>Attendance</h1>
+      <form action="/attendee" method="post">
+        <label>
+          Enter attendee name:
+          <input type="text" name="name" placeholder="Name" required autofocus />
+        </label>
+        <button type="submit">Go</button>
+      </form>
     </Layout>
   );
 };

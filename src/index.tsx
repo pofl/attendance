@@ -15,8 +15,16 @@ const app = new Hono();
 app.use("/static/*", serveStatic({ root: "./public", rewriteRequestPath: (path) => path.replace(/^\/static/, "") }));
 
 app.get("/", (c) => {
-  const messages = ["Good Morning", "Good Evening", "Good Night"];
-  return c.html(<IndexPage messages={messages} />);
+  return c.html(<IndexPage />);
+});
+
+app.post("/attendee", async (c) => {
+  const formData = await c.req.parseBody();
+  const name = (formData.name as string)?.trim();
+  if (!name) {
+    return c.redirect("/");
+  }
+  return c.redirect(`/attendee/${encodeURIComponent(name)}`);
 });
 
 app.get("/hello", (c) => {
