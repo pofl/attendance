@@ -1,4 +1,5 @@
 import type { FC } from "hono/jsx";
+import { getTranslations } from "../i18n.js";
 import type { AttendeeRecord } from "../repository.js";
 
 const formatDateForInput = (date: Date | null): string => {
@@ -6,72 +7,76 @@ const formatDateForInput = (date: Date | null): string => {
   return date.toISOString().slice(0, 16); // Format: YYYY-MM-DDTHH:mm
 };
 
-export const AttendeeForm: FC<{ attendee: AttendeeRecord }> = ({ attendee }) => {
+export const AttendeeForm: FC<{ attendee: AttendeeRecord; locale?: string }> = ({ attendee, locale }) => {
+  const t = getTranslations(locale ?? attendee.locale ?? "en_US").attendeeForm;
   return (
     <form hx-put={`/attendees/${encodeURIComponent(attendee.name)}`} hx-swap="outerHTML">
-      <h2>Edit Attendee: {attendee.name}</h2>
+      <h2>{t.editTitle}: {attendee.name}</h2>
 
       <label>
-        Locale:
-        <input type="text" name="locale" value={attendee.locale} required />
+        {t.locale}:
+        <select name="locale">
+          <option value="en_US" selected={attendee.locale === "en_US"}>English (US)</option>
+          <option value="de_DE" selected={attendee.locale === "de_DE"}>Deutsch</option>
+        </select>
       </label>
 
       <label>
-        Arrival Date:
+        {t.arrivalDate}:
         <input type="datetime-local" name="arrival_date" value={formatDateForInput(attendee.arrival_date)} />
       </label>
 
       <label>
-        Arrival Flight:
+        {t.arrivalFlight}:
         <input type="text" name="arrival_flight" value={attendee.arrival_flight ?? ""} />
       </label>
 
       <label>
-        Departure Date:
+        {t.departureDate}:
         <input type="datetime-local" name="departure_date" value={formatDateForInput(attendee.departure_date)} />
       </label>
 
       <label>
-        Departure Flight:
+        {t.departureFlight}:
         <input type="text" name="departure_flight" value={attendee.departure_flight ?? ""} />
       </label>
 
       <label>
-        Passport Status:
+        {t.passportStatus}:
         <select name="passport_status" value={attendee.passport_status}>
           <option value="valid" selected={attendee.passport_status === "valid"}>
-            Valid
+            {t.passportOptions.valid}
           </option>
           <option value="pending" selected={attendee.passport_status === "pending"}>
-            Pending
+            {t.passportOptions.pending}
           </option>
           <option value="none" selected={attendee.passport_status === "none"}>
-            None
+            {t.passportOptions.none}
           </option>
         </select>
       </label>
 
       <label>
-        Visa Status:
+        {t.visaStatus}:
         <select name="visa_status" value={attendee.visa_status}>
           <option value="obtained" selected={attendee.visa_status === "obtained"}>
-            Obtained
+            {t.visaOptions.obtained}
           </option>
           <option value="pending" selected={attendee.visa_status === "pending"}>
-            Pending
+            {t.visaOptions.pending}
           </option>
           <option value="none" selected={attendee.visa_status === "none"}>
-            None
+            {t.visaOptions.none}
           </option>
         </select>
       </label>
 
       <label>
-        Dietary Requirements:
+        {t.dietaryRequirements}:
         <textarea name="dietary_requirements">{attendee.dietary_requirements ?? ""}</textarea>
       </label>
 
-      <button type="submit">Save</button>
+      <button type="submit">{t.save}</button>
     </form>
   );
 };
