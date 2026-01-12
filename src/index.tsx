@@ -1,4 +1,5 @@
 import { serve } from "@hono/node-server";
+import { serveStatic } from "@hono/node-server/serve-static";
 import { config } from "dotenv";
 import { Hono } from "hono";
 import type { FC } from "hono/jsx";
@@ -10,12 +11,17 @@ const db = postgres(process.env.PG_URI!);
 
 const app = new Hono();
 
+app.use("/static/*", serveStatic({ root: "./public", rewriteRequestPath: (path) => path.replace(/^\/static/, "") }));
+
 const Layout: FC = (props) => {
   return (
     <html>
       <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Attendance</title>
         <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js"></script>
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css"></link>
+        <link rel="stylesheet" href="/static/styles.css"></link>
       </head>
       <body>{props.children}</body>
     </html>
@@ -31,7 +37,7 @@ const Top: FC<{ messages: string[] }> = (props) => {
           return <li>{message}!!</li>;
         })}
       </ul>
-      <button hx-get="/hello" hx-target="body" hx-swap="afterend">
+      <button hx-get="/hello" hx-swap="afterend">
         Load
       </button>
       <div hx-get="/part/attendee/Florian" hx-trigger="load" hx-swap="innerHTML">

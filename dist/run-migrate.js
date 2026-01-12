@@ -6,6 +6,9 @@ const migrations = [
     {
         id: "20260111-create-table-attendees",
         sql: `
+      CREATE TYPE enum_passport_status AS ENUM ('valid', 'pending', 'none');
+      CREATE TYPE enum_visa_status AS ENUM ('obtained', 'pending', 'none');
+
       CREATE TABLE IF NOT EXISTS attendees (
         id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
 
@@ -23,9 +26,6 @@ const migrations = [
         dietary_requirements TEXT,
         CONSTRAINT attendees_name_unique UNIQUE (name)
       );
-
-      CREATE ENUM IF NOT EXISTS enum_passport_status AS ('valid', 'pending', 'none');
-      CREATE ENUM IF NOT EXISTS enum_visa_status AS ('obtained', 'pending', 'none');
     `,
     },
 ];

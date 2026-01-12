@@ -1,5 +1,6 @@
 import { jsx as _jsx, jsxs as _jsxs } from "hono/jsx/jsx-runtime";
 import { serve } from "@hono/node-server";
+import { serveStatic } from "@hono/node-server/serve-static";
 import { config } from "dotenv";
 import { Hono } from "hono";
 import postgres from "postgres";
@@ -7,8 +8,9 @@ import { getAttendeeByName, upsertAttendee } from "./repository.js";
 config();
 const db = postgres(process.env.PG_URI);
 const app = new Hono();
+app.use("/styles.css", serveStatic({ path: "./public/styles.css" }));
 const Layout = (props) => {
-    return (_jsxs("html", { children: [_jsxs("head", { children: [_jsx("script", { src: "https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js" }), _jsx("link", { rel: "stylesheet", href: "https://cdn.jsdelivr.net/npm/water.css@2/out/water.css" })] }), _jsx("body", { children: props.children })] }));
+    return (_jsxs("html", { children: [_jsxs("head", { children: [_jsx("meta", { charset: "UTF-8" }), _jsx("meta", { name: "viewport", content: "width=device-width, initial-scale=1.0" }), _jsx("title", { children: "Attendance" }), _jsx("script", { src: "https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js" }), _jsx("link", { rel: "stylesheet", href: "/styles.css" })] }), _jsx("body", { children: props.children })] }));
 };
 const Top = (props) => {
     return (_jsxs(Layout, { children: [_jsx("h1", { children: "Hello Hono!" }), _jsx("ul", { children: props.messages.map((message) => {
