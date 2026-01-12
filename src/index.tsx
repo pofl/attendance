@@ -2,8 +2,10 @@ import { serve } from "@hono/node-server";
 import { serveStatic } from "@hono/node-server/serve-static";
 import { config } from "dotenv";
 import { Hono } from "hono";
+import { getCookie, setCookie } from "hono/cookie";
 import postgres from "postgres";
 import { AttendeeForm } from "./components/index.js";
+import { DEFAULT_LOCALE, getTranslations, isValidLocale, type Locale } from "./i18n.js";
 import { AttendeePage, CockpitPage, IndexPage, Layout } from "./pages/index.js";
 import { getAllAttendees, getAttendeeByName, upsertAttendee, type Attendee } from "./repository.js";
 
@@ -12,10 +14,34 @@ const db = postgres(process.env.PG_URI!);
 
 const app = new Hono();
 
+// Helper to get locale from cookie
+const getLocale = (c: { req: { raw: Request } }): Locale => {
+  const locale = getCookie(c as any, "locale");
+  return isValidLocale(locale ?? "") ? (locale as Locale) : DEFAULT_LOCALE;
+};
+
 app.use("/static/*", serveStatic({ root: "./public", rewriteRequestPath: (path) => path.replace(/^\/static/, "") }));
 
+// Route to set locale preference
+app.post("/set-locale", async (c) => {
+  const formData = await c.req.parseBody();
+  const locale = formData.locale as string;
+  const redirect = (formData.redirect as string) || "/";
+
+  if (isValidLocale(locale)) {
+    setCookie(c, "locale", locale, {
+      path: "/",
+      maxAge: 60 * 60 * 24 * 365, // 1 year
+      sameSite: "Lax",
+    });
+  }
+
+  return c.redirect(redirect);
+});
+
 app.get("/", (c) => {
-  return c.html(<IndexPage />);
+  const locale = getLocale(c);
+  return c.html(<IndexPage locale={locale} />);
 });
 
 app.post("/attendee", async (c) => {
@@ -33,20 +59,24 @@ app.get("/hello", (c) => {
 
 app.get("/part/attendees/:name", async (c) => {
   const name = c.req.param("name");
+  const locale = getLocale(c);
+  const t = getTranslations(locale);
   try {
     const attendee = await getAttendeeByName(db, name);
     if (!attendee) {
-      return c.html(<p class="error">Attendee not found: {name}</p>, 404);
+      return c.html(<p class="error">{t.attendeePage.notFoundMessage}: {name}</p>, 404);
     }
-    return c.html(<AttendeeForm attendee={attendee} />);
+    return c.html(<AttendeeForm attendee={attendee} locale={locale} />);
   } catch (e) {
     console.error(e);
-    return c.html(<p class="error">Error loading attendee</p>, 500);
+    return c.html(<p class="error">{t.common.error}</p>, 500);
   }
 });
 
 app.put("/attendees/:name", async (c) => {
   const name = c.req.param("name");
+  const locale = getLocale(c);
+  const t = getTranslations(locale);
   try {
     const formData = await c.req.parseBody();
 
@@ -67,34 +97,36 @@ app.put("/attendees/:name", async (c) => {
     // Fetch updated record and return the form
     const updated = await getAttendeeByName(db, name);
     if (!updated) {
-      return c.html(<p>Error: attendee not found after update</p>, 500);
+      return c.html(<p class="error">{t.common.error}</p>, 500);
     }
-    return c.html(<AttendeeForm attendee={updated} />);
+    return c.html(<AttendeeForm attendee={updated} locale={locale} />);
   } catch (e) {
     console.error(e);
-    return c.html(<p>Error saving attendee</p>, 500);
+    return c.html(<p class="error">{t.common.error}</p>, 500);
   }
 });
 
 app.get("/attendees/:name", async (c) => {
   const name = c.req.param("name");
+  const locale = getLocale(c);
+  const t = getTranslations(locale);
   try {
     const attendee = await getAttendeeByName(db, name);
     if (!attendee) {
       return c.html(
-        <Layout>
-          <h1>Attendee Not Found</h1>
-          <p class="error">No attendee found with name: {name}</p>
+        <Layout locale={locale} currentPath={`/attendees/${encodeURIComponent(name)}`}>
+          <h1>{t.attendeePage.notFoundTitle}</h1>
+          <p class="error">{t.attendeePage.notFoundMessage}: {name}</p>
         </Layout>,
         404
       );
     }
-    return c.html(<AttendeePage attendee={attendee} />);
+    return c.html(<AttendeePage attendee={attendee} locale={locale} />);
   } catch (e) {
     console.error(e);
     return c.html(
-      <Layout>
-        <p class="error">Error loading attendee</p>
+      <Layout locale={locale} currentPath={`/attendees/${encodeURIComponent(name)}`}>
+        <p class="error">{t.common.error}</p>
       </Layout>,
       500
     );
@@ -102,14 +134,16 @@ app.get("/attendees/:name", async (c) => {
 });
 
 app.get("/cockpit", async (c) => {
+  const locale = getLocale(c);
+  const t = getTranslations(locale);
   try {
     const attendees = await getAllAttendees(db);
-    return c.html(<CockpitPage attendees={attendees} />);
+    return c.html(<CockpitPage attendees={attendees} locale={locale} />);
   } catch (e) {
     console.error(e);
     return c.html(
-      <Layout>
-        <p class="error">Error loading attendees</p>
+      <Layout locale={locale} currentPath="/cockpit">
+        <p class="error">{t.common.error}</p>
       </Layout>,
       500
     );

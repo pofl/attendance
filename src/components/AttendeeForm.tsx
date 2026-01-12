@@ -10,7 +10,7 @@ const formatDateForInput = (date: Date | null): string => {
 export const AttendeeForm: FC<{ attendee: AttendeeRecord; locale?: string }> = ({ attendee, locale }) => {
   const t = getTranslations(locale ?? attendee.locale ?? "en_US").attendeeForm;
   return (
-    <form hx-put={`/attendees/${encodeURIComponent(attendee.name)}`} hx-swap="outerHTML">
+    <form hx-put={`/attendees/${encodeURIComponent(attendee.name)}`} hx-swap="outerHTML" class="form-card">
       <h2>{t.editTitle}: {attendee.name}</h2>
 
       <label>

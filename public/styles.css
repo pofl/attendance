@@ -74,7 +74,7 @@ li {
 }
 
 /* Forms */
-form {
+.form-card {
   background: var(--color-bg-card);
   padding: 1.5rem;
   border-radius: var(--radius);
@@ -189,7 +189,7 @@ button[type="submit"] {
   margin-bottom: 1rem;
 }
 
-.card form {
+.card .form-card {
   box-shadow: none;
   border: none;
   padding: 0;
@@ -263,8 +263,26 @@ button[type="submit"] {
   padding: 0 1.5rem 1.5rem;
 }
 
-.accordion-content form {
+.accordion-content .form-card {
   box-shadow: none;
   border: none;
   padding: 1rem 0 0;
+}
+
+/* Language Toggle */
+.language-toggle {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+}
+
+.language-select {
+  font-size: 1rem;
+  padding: 0.5rem 0.75rem;
+  color: var(--color-text);
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  box-shadow: var(--shadow);
 }
