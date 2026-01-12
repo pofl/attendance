@@ -11,9 +11,12 @@ export const CockpitPage: FC<{ attendees: AttendeeRecord[] }> = ({ attendees }) 
         <p>No attendees found.</p>
       ) : (
         attendees.map((attendee) => (
-          <div key={attendee.id} style={{ marginBottom: "2rem" }}>
-            <AttendeeForm attendee={attendee} />
-          </div>
+          <details key={attendee.id} class="accordion">
+            <summary class="accordion-header">{attendee.name}</summary>
+            <div class="accordion-content">
+              <AttendeeForm attendee={attendee} />
+            </div>
+          </details>
         ))
       )}
     </Layout>
