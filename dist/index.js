@@ -8,14 +8,14 @@ import { getAttendeeByName, upsertAttendee } from "./repository.js";
 config();
 const db = postgres(process.env.PG_URI);
 const app = new Hono();
-app.use("/styles.css", serveStatic({ path: "./public/styles.css" }));
+app.use("/static/*", serveStatic({ root: "./public", rewriteRequestPath: (path) => path.replace(/^\/static/, "") }));
 const Layout = (props) => {
-    return (_jsxs("html", { children: [_jsxs("head", { children: [_jsx("meta", { charset: "UTF-8" }), _jsx("meta", { name: "viewport", content: "width=device-width, initial-scale=1.0" }), _jsx("title", { children: "Attendance" }), _jsx("script", { src: "https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js" }), _jsx("link", { rel: "stylesheet", href: "/styles.css" })] }), _jsx("body", { children: props.children })] }));
+    return (_jsxs("html", { children: [_jsxs("head", { children: [_jsx("meta", { charset: "UTF-8" }), _jsx("meta", { name: "viewport", content: "width=device-width, initial-scale=1.0" }), _jsx("title", { children: "Attendance" }), _jsx("script", { src: "https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js" }), _jsx("link", { rel: "stylesheet", href: "/static/styles.css" })] }), _jsx("body", { children: props.children })] }));
 };
 const Top = (props) => {
     return (_jsxs(Layout, { children: [_jsx("h1", { children: "Hello Hono!" }), _jsx("ul", { children: props.messages.map((message) => {
                     return _jsxs("li", { children: [message, "!!"] });
-                }) }), _jsx("button", { "hx-get": "/hello", "hx-target": "body", "hx-swap": "afterend", children: "Load" }), _jsx("div", { "hx-get": "/part/attendee/Florian", "hx-trigger": "load", "hx-swap": "innerHTML", children: "Florian" })] }));
+                }) }), _jsx("button", { "hx-get": "/hello", "hx-swap": "afterend", children: "Load" }), _jsx("div", { "hx-get": "/part/attendee/Florian", "hx-trigger": "load", "hx-swap": "innerHTML", children: "Florian" })] }));
 };
 app.get("/", (c) => {
     const messages = ["Good Morning", "Good Evening", "Good Night"];

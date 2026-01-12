@@ -69,53 +69,39 @@ export async function getAttendeeByName(db, name) {
 }
 export async function upsertAttendee(db, attendee) {
     try {
-        // Note: Since there is no unique constraint on 'name' in the schema,
-        // we use a transaction to check for existence before inserting or updating.
-        await db.begin(async (sql) => {
-            const existing = await sql `
-        SELECT id FROM attendees WHERE name = ${attendee.name}
-      `;
-            if (existing.length > 0) {
-                await sql `
-          UPDATE attendees SET
-            locale = ${attendee.locale},
-            arrival_date = ${attendee.arrival_date},
-            arrival_flight = ${attendee.arrival_flight},
-            departure_date = ${attendee.departure_date},
-            departure_flight = ${attendee.departure_flight},
-            passport_status = ${attendee.passport_status},
-            visa_status = ${attendee.visa_status},
-            dietary_requirements = ${attendee.dietary_requirements},
-            updated_at = NOW()
-          WHERE name = ${attendee.name}
-        `;
-            }
-            else {
-                await sql `
-          INSERT INTO attendees (
-            name,
-            locale,
-            arrival_date,
-            arrival_flight,
-            departure_date,
-            departure_flight,
-            passport_status,
-            visa_status,
-            dietary_requirements
-          ) VALUES (
-            ${attendee.name},
-            ${attendee.locale},
-            ${attendee.arrival_date},
-            ${attendee.arrival_flight},
-            ${attendee.departure_date},
-            ${attendee.departure_flight},
-            ${attendee.passport_status},
-            ${attendee.visa_status},
-            ${attendee.dietary_requirements}
-          )
-        `;
-            }
-        });
+        await db `
+      INSERT INTO attendees (
+        name,
+        locale,
+        arrival_date,
+        arrival_flight,
+        departure_date,
+        departure_flight,
+        passport_status,
+        visa_status,
+        dietary_requirements
+      ) VALUES (
+        ${attendee.name},
+        ${attendee.locale},
+        ${attendee.arrival_date},
+        ${attendee.arrival_flight},
+        ${attendee.departure_date},
+        ${attendee.departure_flight},
+        ${attendee.passport_status},
+        ${attendee.visa_status},
+        ${attendee.dietary_requirements}
+      )
+      ON CONFLICT (name) DO UPDATE SET
+        locale = EXCLUDED.locale,
+        arrival_date = EXCLUDED.arrival_date,
+        arrival_flight = EXCLUDED.arrival_flight,
+        departure_date = EXCLUDED.departure_date,
+        departure_flight = EXCLUDED.departure_flight,
+        passport_status = EXCLUDED.passport_status,
+        visa_status = EXCLUDED.visa_status,
+        dietary_requirements = EXCLUDED.dietary_requirements,
+        updated_at = NOW()
+    `;
         console.log("Attendee upserted:", attendee.name);
     }
     catch (error) {
