@@ -6,23 +6,11 @@ import { Layout } from "./Layout.js";
 
 const AttendeeAccordion: FC<{ attendee: AttendeeRecord; locale: Locale }> = ({ attendee, locale }) => (
   <details key={attendee.id} class="accordion">
-    <summary class="accordion-header">{attendee.name}</summary>
+    <summary class="accordion-header"><div class="grow">{attendee.name}</div> <a href={`/attendees/${encodeURIComponent(attendee.name)}`}><button>Open</button></a></summary>
     <div class="accordion-content">
       <AttendeeForm attendee={attendee} locale={locale} />
     </div>
   </details>
-);
-
-const AttendeeList: FC<{ attendees: AttendeeRecord[]; locale: Locale; noAttendeesText: string }> = ({ attendees, locale, noAttendeesText }) => (
-  attendees.length === 0 ? (
-    <p>{noAttendeesText}</p>
-  ) : (
-    <>
-      {attendees.map((attendee) => (
-        <AttendeeAccordion key={attendee.id} attendee={attendee} locale={locale} />
-      ))}
-    </>
-  )
 );
 
 export const CockpitPage: FC<{ attendees: AttendeeRecord[]; locale: Locale }> = ({ attendees, locale }) => {
