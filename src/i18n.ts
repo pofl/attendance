@@ -130,12 +130,12 @@ const de_DE: Translations = {
     save: "Speichern",
     passportOptions: {
       valid: "Gültig",
-      pending: "Ausstehend",
+      pending: "Beantragt",
       none: "Keiner",
     },
     visaOptions: {
       obtained: "Erhalten",
-      pending: "Ausstehend",
+      pending: "Beantragt",
       none: "Keines",
     },
   },
