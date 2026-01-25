@@ -3,14 +3,14 @@ import { serveStatic } from "@hono/node-server/serve-static";
 import { config } from "dotenv";
 import { Hono } from "hono";
 import { getCookie, setCookie } from "hono/cookie";
-import postgres from "postgres";
 import { AttendeeForm } from "./components/index.js";
+import { openDatabase } from "./db.js";
 import { DEFAULT_LOCALE, getTranslations, isValidLocale, type Locale } from "./i18n.js";
 import { AttendeePage, CockpitPage, IndexPage, Layout } from "./pages/index.js";
 import { getAllAttendees, getAttendeeByName, upsertAttendee, type Attendee } from "./repository.js";
 
 config();
-const db = postgres(process.env.PG_URI!);
+const db = openDatabase();
 
 const app = new Hono();
 
@@ -21,6 +21,15 @@ const getLocale = (c: { req: { raw: Request } }): Locale => {
 };
 
 app.use("/static/*", serveStatic({ root: "./public", rewriteRequestPath: (path) => path.replace(/^\/static/, "") }));
+
+const toUtcIsoString = (value: unknown): string | null => {
+  if (value === null || value === undefined) return null;
+  const raw = String(value).trim();
+  if (!raw) return null;
+  const date = new Date(raw);
+  if (Number.isNaN(date.getTime())) return null;
+  return date.toISOString();
+};
 
 // Route to set locale preference
 app.post("/set-locale", async (c) => {
@@ -62,7 +71,7 @@ app.get("/part/attendees/:name", async (c) => {
   const locale = getLocale(c);
   const t = getTranslations(locale);
   try {
-    const attendee = await getAttendeeByName(db, name);
+    const attendee = getAttendeeByName(db, name);
     if (!attendee) {
       return c.html(<p class="error">{t.attendeePage.notFoundMessage}: {name}</p>, 404);
     }
@@ -83,19 +92,19 @@ app.put("/attendees/:name", async (c) => {
     const attendee: Attendee = {
       name,
       locale: formData.locale as string,
-      arrival_date: formData.arrival_date ? new Date(formData.arrival_date as string) : null,
+      arrival_date: toUtcIsoString(formData.arrival_date),
       arrival_flight: (formData.arrival_flight as string) || null,
-      departure_date: formData.departure_date ? new Date(formData.departure_date as string) : null,
+      departure_date: toUtcIsoString(formData.departure_date),
       departure_flight: (formData.departure_flight as string) || null,
       passport_status: formData.passport_status as "valid" | "pending" | "none",
       visa_status: formData.visa_status as "obtained" | "pending" | "none",
       dietary_requirements: (formData.dietary_requirements as string) || null,
     };
 
-    await upsertAttendee(db, attendee);
+    upsertAttendee(db, attendee);
 
     // Fetch updated record and return the form
-    const updated = await getAttendeeByName(db, name);
+    const updated = getAttendeeByName(db, name);
     if (!updated) {
       return c.html(<p class="error">{t.common.error}</p>, 500);
     }
@@ -111,7 +120,7 @@ app.get("/attendees/:name", async (c) => {
   const locale = getLocale(c);
   const t = getTranslations(locale);
   try {
-    const attendee = await getAttendeeByName(db, name);
+    const attendee = getAttendeeByName(db, name);
     if (!attendee) {
       return c.html(
         <Layout locale={locale} currentPath={`/attendees/${encodeURIComponent(name)}`}>
@@ -137,7 +146,7 @@ app.get("/cockpit", async (c) => {
   const locale = getLocale(c);
   const t = getTranslations(locale);
   try {
-    const attendees = await getAllAttendees(db);
+    const attendees = getAllAttendees(db);
     return c.html(<CockpitPage attendees={attendees} locale={locale} />);
   } catch (e) {
     console.error(e);
@@ -169,7 +178,7 @@ app.post("/cockpit/attendees", async (c) => {
       visa_status: "none",
       dietary_requirements: null,
     };
-    await upsertAttendee(db, attendee);
+    upsertAttendee(db, attendee);
     return c.redirect(`/attendees/${encodeURIComponent(name)}`);
   } catch (e) {
     console.error(e);

@@ -1,4 +1,4 @@
-import postgres from "postgres";
+import type { Database } from "better-sqlite3";
 
 export interface Migration {
   id: string;
@@ -6,46 +6,45 @@ export interface Migration {
 }
 
 export class MigrationRunner {
-  private db: postgres.Sql;
+  private db: Database;
 
-  constructor(db: postgres.Sql) {
+  constructor(db: Database) {
     this.db = db;
   }
 
-  async ensureMigrationsTable(): Promise<void> {
-    await this.db`
+  ensureMigrationsTable(): void {
+    this.db.exec(`
       CREATE TABLE IF NOT EXISTS migrations (
         id TEXT PRIMARY KEY,
-        executed_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+        executed_at TEXT NOT NULL
       )
-    `;
+    `);
   }
 
-  async getExecutedMigrations(): Promise<string[]> {
-    const result = await this.db`
-      SELECT id FROM migrations ORDER BY executed_at ASC
-    `;
-    return result.map((row) => row.id);
+  getExecutedMigrations(): string[] {
+    const rows = this.db.prepare("SELECT id FROM migrations ORDER BY executed_at ASC").all();
+    return rows.map((row) => (row as { id: string }).id);
   }
 
-  async runMigration(migration: Migration): Promise<void> {
+  runMigration(migration: Migration): void {
     console.log(`Running migration: ${migration.id}`);
 
-    await this.db.begin(async (tx) => {
-      // Execute the migration SQL
-      await tx.unsafe(migration.sql);
-
-      // Record the migration as completed
-      await tx.unsafe("INSERT INTO migrations (id) VALUES ($1)", [migration.id]);
+    const runTransaction = this.db.transaction(() => {
+      this.db.exec(migration.sql);
+      this.db
+        .prepare("INSERT INTO migrations (id, executed_at) VALUES (?, ?)")
+        .run(migration.id, new Date().toISOString());
     });
+
+    runTransaction();
 
     console.log(`Migration completed: ${migration.id}`);
   }
 
-  async runMigrations(migrations: Migration[]): Promise<void> {
-    await this.ensureMigrationsTable();
+  runMigrations(migrations: Migration[]): void {
+    this.ensureMigrationsTable();
 
-    const executedMigrations = await this.getExecutedMigrations();
+    const executedMigrations = this.getExecutedMigrations();
     const pendingMigrations = migrations.filter((migration) => !executedMigrations.includes(migration.id));
 
     if (pendingMigrations.length === 0) {
@@ -57,7 +56,7 @@ export class MigrationRunner {
 
     for (const migration of pendingMigrations) {
       try {
-        await this.runMigration(migration);
+        this.runMigration(migration);
       } catch (error) {
         console.error(`Migration failed: ${migration.id}`, error);
         throw error;

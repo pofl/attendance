@@ -3,6 +3,8 @@
     "target": "ESNext",
     "module": "NodeNext",
     "strict": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "verbatimModuleSyntax": true,
     "skipLibCheck": true,
     "types": [

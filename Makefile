@@ -1,9 +1,3 @@
-up:
-	docker compose up -d
-
-down:
-	docker compose down
-
 dev:
 	npm run dev
 
@@ -14,4 +8,4 @@ start:
 	npm start
 
 migrate:
-	node src/run-migrate.js
+	npm run migrate

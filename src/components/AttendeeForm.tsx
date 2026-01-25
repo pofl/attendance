@@ -2,9 +2,18 @@ import type { FC } from "hono/jsx";
 import { getTranslations } from "../i18n.js";
 import type { AttendeeRecord } from "../repository.js";
 
-const formatDateForInput = (date: Date | null): string => {
-  if (!date) return "";
-  return date.toISOString().slice(0, 16); // Format: YYYY-MM-DDTHH:mm
+const padTimePart = (value: number): string => value.toString().padStart(2, "0");
+
+const formatDateForInput = (isoDate: string | null): string => {
+  if (!isoDate) return "";
+  const date = new Date(isoDate);
+  if (Number.isNaN(date.getTime())) return "";
+  const year = date.getFullYear();
+  const month = padTimePart(date.getMonth() + 1);
+  const day = padTimePart(date.getDate());
+  const hours = padTimePart(date.getHours());
+  const minutes = padTimePart(date.getMinutes());
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
 };
 
 export const AttendeeForm: FC<{ attendee: AttendeeRecord; locale?: string }> = ({ attendee, locale }) => {
