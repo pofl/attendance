@@ -1,6 +1,7 @@
 import type { FC } from "hono/jsx";
 import { getTranslations, type Locale } from "../i18n.js";
 import type { AttendeeRecord, FlightRecord } from "../repository.js";
+import { formatLocalDateTime, formatOffsetLabel } from "../utils/flightFormat.js";
 import { Layout } from "./Layout.js";
 
 interface AttendeeFlights {
@@ -8,28 +9,6 @@ interface AttendeeFlights {
   flights: FlightRecord[];
 }
 
-const padTimePart = (value: number): string => value.toString().padStart(2, "0");
-
-const formatOffsetLabel = (offsetMinutes: number): string => {
-  const sign = offsetMinutes >= 0 ? "+" : "-";
-  const abs = Math.abs(offsetMinutes);
-  const hours = Math.floor(abs / 60);
-  const minutes = abs % 60;
-  return `UTC${sign}${padTimePart(hours)}:${padTimePart(minutes)}`;
-};
-
-const formatLocalDateTime = (utcIso: string, offsetMinutes: number): string => {
-  const date = new Date(utcIso);
-  if (Number.isNaN(date.getTime())) return "-";
-  const localMs = date.getTime() + offsetMinutes * 60_000;
-  const local = new Date(localMs);
-  const year = local.getUTCFullYear();
-  const month = padTimePart(local.getUTCMonth() + 1);
-  const day = padTimePart(local.getUTCDate());
-  const hours = padTimePart(local.getUTCHours());
-  const minutes = padTimePart(local.getUTCMinutes());
-  return `${year}-${month}-${day} ${hours}:${minutes}`;
-};
 
 export const AttendeeFlightsPage: FC<{ locale: Locale; attendees: AttendeeFlights[] }> = ({ locale, attendees }) => {
   const t = getTranslations(locale).attendeeFlightsPage;
