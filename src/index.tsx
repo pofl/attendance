@@ -6,15 +6,30 @@ import { getCookie, setCookie } from "hono/cookie";
 import { AttendeeForm } from "./components/index.js";
 import { openDatabase } from "./db.js";
 import { DEFAULT_LOCALE, getTranslations, isValidLocale, type Locale } from "./i18n.js";
-import { AttendeeFlightsPage, AttendeePage, CockpitPage, FlightsOverviewPage, IndexPage, Layout } from "./pages/index.js";
 import {
+  AttendeeFlightsPage,
+  AttendeePage,
+  CockpitPage,
+  FlightManagePage,
+  FlightPassengersPage,
+  FlightsOverviewPage,
+  IndexPage,
+  Layout,
+} from "./pages/index.js";
+import {
+  addPassengerToFlight,
+  deleteFlight,
   getAllAttendees,
+  getAllFlights,
   getAttendeeByName,
   getFlightAggregates,
+  getFlightById,
   getFlightsForAttendee,
+  getPassengersForFlight,
   removePassengerFromFlight,
+  updateFlightById,
   upsertAttendee,
-  upsertFlightForAttendee,
+  upsertFlight,
   type Attendee,
   type Flight,
 } from "./repository.js";
@@ -66,6 +81,57 @@ const toUtcIsoStringWithOffset = (value: unknown, offsetMinutes: number | null):
   const date = new Date(utcMs);
   if (Number.isNaN(date.getTime())) return null;
   return date.toISOString();
+};
+
+const parseOffsetMinutesFromIso = (value: unknown): number | null => {
+  if (value === null || value === undefined) return null;
+  const raw = String(value).trim();
+  if (!raw) return null;
+  if (raw.endsWith("Z")) return 0;
+  const match = raw.match(/([+-])(\d{2}):(\d{2})$/);
+  if (!match) return null;
+  const [, sign, hours, minutes] = match;
+  const total = Number(hours) * 60 + Number(minutes);
+  return sign === "-" ? -total : total;
+};
+
+const parseFlightFromPayload = (payload: Record<string, unknown>): Flight | null => {
+  const flightNumber = (payload.flight_number as string | undefined)?.trim();
+  const fromAirport = (payload.from_airport as string | undefined)?.trim();
+  const toAirport = (payload.to_airport as string | undefined)?.trim();
+  const fromOffset =
+    parseOffsetMinutes(payload.from_utc_offset_minutes) ??
+    parseOffsetMinutesFromIso(payload.departure_local) ??
+    null;
+  const toOffset =
+    parseOffsetMinutes(payload.to_utc_offset_minutes) ??
+    parseOffsetMinutesFromIso(payload.arrival_local) ??
+    null;
+
+  const departureAtDirect = toUtcIsoString(payload.departure_at);
+  const arrivalAtDirect = toUtcIsoString(payload.arrival_at);
+  const departureAt =
+    departureAtDirect ??
+    toUtcIsoString(payload.departure_local) ??
+    toUtcIsoStringWithOffset(payload.departure_local, fromOffset);
+  const arrivalAt =
+    arrivalAtDirect ??
+    toUtcIsoString(payload.arrival_local) ??
+    toUtcIsoStringWithOffset(payload.arrival_local, toOffset);
+
+  if (!flightNumber || !fromAirport || !toAirport || fromOffset === null || toOffset === null || !departureAt || !arrivalAt) {
+    return null;
+  }
+
+  return {
+    flight_number: flightNumber,
+    from_airport: fromAirport,
+    to_airport: toAirport,
+    from_utc_offset_minutes: fromOffset,
+    to_utc_offset_minutes: toOffset,
+    departure_at: departureAt,
+    arrival_at: arrivalAt,
+  };
 };
 
 // Route to set locale preference
@@ -240,6 +306,119 @@ app.get("/flights", async (c) => {
   }
 });
 
+app.get("/flights/manage", async (c) => {
+  const locale = getLocale(c);
+  const t = getTranslations(locale);
+  try {
+    const flights = getAllFlights(db);
+    return c.html(<FlightManagePage flights={flights} locale={locale} />);
+  } catch (e) {
+    console.error(e);
+    return c.html(
+      <Layout locale={locale} currentPath="/flights/manage">
+        <p class="error">{t.common.error}</p>
+      </Layout>,
+      500
+    );
+  }
+});
+
+app.post("/flights", async (c) => {
+  const locale = getLocale(c);
+  const t = getTranslations(locale);
+  try {
+    const formData = await c.req.parseBody();
+    const jsonPayload = typeof formData.flight_json === "string" ? formData.flight_json.trim() : "";
+    let flight: Flight | null = null;
+
+    if (jsonPayload) {
+      try {
+        const parsed = JSON.parse(jsonPayload) as Record<string, unknown>;
+        flight = parseFlightFromPayload(parsed);
+      } catch (error) {
+        console.error("Invalid flight JSON:", error);
+      }
+    }
+
+    if (!flight) {
+      flight = parseFlightFromPayload(formData as Record<string, unknown>);
+    }
+
+    if (!flight) {
+      return c.html(
+        <Layout locale={locale} currentPath="/flights/manage">
+          <p class="error">{t.common.error}</p>
+        </Layout>,
+        400
+      );
+    }
+    upsertFlight(db, flight);
+    return c.redirect("/flights/manage");
+  } catch (e) {
+    console.error(e);
+    return c.html(
+      <Layout locale={locale} currentPath="/flights/manage">
+        <p class="error">{t.common.error}</p>
+      </Layout>,
+      500
+    );
+  }
+});
+
+app.post("/flights/:id", async (c) => {
+  const locale = getLocale(c);
+  const t = getTranslations(locale);
+  try {
+    const id = Number(c.req.param("id"));
+    if (!Number.isFinite(id)) {
+      return c.redirect("/flights/manage");
+    }
+
+    const formData = await c.req.parseBody();
+    const flight = parseFlightFromPayload(formData as Record<string, unknown>);
+
+    if (!flight) {
+      return c.html(
+        <Layout locale={locale} currentPath="/flights/manage">
+          <p class="error">{t.common.error}</p>
+        </Layout>,
+        400
+      );
+    }
+    updateFlightById(db, id, flight);
+    return c.redirect("/flights/manage");
+  } catch (e) {
+    console.error(e);
+    return c.html(
+      <Layout locale={locale} currentPath="/flights/manage">
+        <p class="error">{t.common.error}</p>
+      </Layout>,
+      500
+    );
+  }
+});
+
+app.post("/flights/:id/delete", async (c) => {
+  const locale = getLocale(c);
+  const t = getTranslations(locale);
+  try {
+    const id = Number(c.req.param("id"));
+    if (!Number.isFinite(id)) {
+      return c.redirect("/flights/manage");
+    }
+    deleteFlight(db, id);
+    return c.redirect("/flights/manage");
+  } catch (e) {
+    console.error(e);
+    return c.html(
+      <Layout locale={locale} currentPath="/flights/manage">
+        <p class="error">{t.common.error}</p>
+      </Layout>,
+      500
+    );
+  }
+});
+
 app.get("/flights/attendees", async (c) => {
   const locale = getLocale(c);
   const t = getTranslations(locale);
@@ -261,55 +440,37 @@ app.get("/flights/attendees", async (c) => {
   }
 });
 
-app.post("/flights/attendees/:name", async (c) => {
-  const name = c.req.param("name");
+app.get("/flights/:id/passengers", async (c) => {
   const locale = getLocale(c);
   const t = getTranslations(locale);
   try {
-    const attendee = getAttendeeByName(db, name);
-    if (!attendee) {
+    const id = Number(c.req.param("id"));
+    if (!Number.isFinite(id)) {
+      return c.redirect("/flights/manage");
+    }
+    const flight = getFlightById(db, id);
+    if (!flight) {
       return c.html(
-        <Layout locale={locale} currentPath="/flights/attendees">
-          <p class="error">{t.attendeePage.notFoundMessage}: {name}</p>
+        <Layout locale={locale} currentPath="/flights/manage">
+          <p class="error">{t.common.notFound}</p>
         </Layout>,
         404
       );
     }
-
-    const formData = await c.req.parseBody();
-    const flightNumber = (formData.flight_number as string)?.trim();
-    const fromAirport = (formData.from_airport as string)?.trim();
-    const toAirport = (formData.to_airport as string)?.trim();
-    const fromOffset = parseOffsetMinutes(formData.from_utc_offset_minutes);
-    const toOffset = parseOffsetMinutes(formData.to_utc_offset_minutes);
-    const departureAt = toUtcIsoStringWithOffset(formData.departure_local, fromOffset);
-    const arrivalAt = toUtcIsoStringWithOffset(formData.arrival_local, toOffset);
-
-    if (!flightNumber || !fromAirport || !toAirport || fromOffset === null || toOffset === null || !departureAt || !arrivalAt) {
-      return c.html(
-        <Layout locale={locale} currentPath="/flights/attendees">
-          <p class="error">{t.common.error}</p>
-        </Layout>,
-        400
-      );
-    }
-
-    const flight: Flight = {
-      flight_number: flightNumber,
-      from_airport: fromAirport,
-      to_airport: toAirport,
-      from_utc_offset_minutes: fromOffset,
-      to_utc_offset_minutes: toOffset,
-      departure_at: departureAt,
-      arrival_at: arrivalAt,
-    };
-
-    upsertFlightForAttendee(db, attendee.id, flight);
-    return c.redirect("/flights/attendees");
+    const attendees = getAllAttendees(db);
+    const passengers = getPassengersForFlight(db, id);
+    return c.html(
+      <FlightPassengersPage
+        locale={locale}
+        flight={flight}
+        attendees={attendees}
+        passengers={passengers}
+      />
+    );
   } catch (e) {
     console.error(e);
     return c.html(
-      <Layout locale={locale} currentPath="/flights/attendees">
+      <Layout locale={locale} currentPath="/flights/manage">
         <p class="error">{t.common.error}</p>
       </Layout>,
       500
@@ -317,33 +478,47 @@ app.post("/flights/attendees/:name", async (c) => {
   }
 });
 
-app.post("/flights/attendees/:name/remove", async (c) => {
-  const name = c.req.param("name");
+app.post("/flights/:id/passengers", async (c) => {
   const locale = getLocale(c);
   const t = getTranslations(locale);
   try {
-    const attendee = getAttendeeByName(db, name);
-    if (!attendee) {
-      return c.html(
-        <Layout locale={locale} currentPath="/flights/attendees">
-          <p class="error">{t.attendeePage.notFoundMessage}: {name}</p>
-        </Layout>,
-        404
-      );
+    const id = Number(c.req.param("id"));
+    if (!Number.isFinite(id)) {
+      return c.redirect("/flights/manage");
     }
-
     const formData = await c.req.parseBody();
-    const flightId = Number(formData.flight_id);
-    if (!Number.isFinite(flightId)) {
-      return c.redirect("/flights/attendees");
+    const attendeeId = Number(formData.attendee_id);
+    if (!Number.isFinite(attendeeId)) {
+      return c.redirect(`/flights/${id}/passengers`);
     }
-
-    removePassengerFromFlight(db, flightId, attendee.id);
-    return c.redirect("/flights/attendees");
+    addPassengerToFlight(db, id, attendeeId);
+    return c.redirect(`/flights/${id}/passengers`);
   } catch (e) {
     console.error(e);
     return c.html(
-      <Layout locale={locale} currentPath="/flights/attendees">
+      <Layout locale={locale} currentPath="/flights/manage">
+        <p class="error">{t.common.error}</p>
+      </Layout>,
+      500
+    );
+  }
+});
+
+app.post("/flights/:id/passengers/:attendeeId/remove", async (c) => {
+  const locale = getLocale(c);
+  const t = getTranslations(locale);
+  try {
+    const flightId = Number(c.req.param("id"));
+    const attendeeId = Number(c.req.param("attendeeId"));
+    if (!Number.isFinite(flightId) || !Number.isFinite(attendeeId)) {
+      return c.redirect("/flights/manage");
+    }
+    removePassengerFromFlight(db, flightId, attendeeId);
+    return c.redirect(`/flights/${flightId}/passengers`);
+  } catch (e) {
+    console.error(e);
+    return c.html(
+      <Layout locale={locale} currentPath="/flights/manage">
         <p class="error">{t.common.error}</p>
       </Layout>,
       500

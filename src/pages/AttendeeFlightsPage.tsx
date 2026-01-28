@@ -1,5 +1,4 @@
 import type { FC } from "hono/jsx";
-import { FlightForm } from "../components/FlightForm.js";
 import { getTranslations, type Locale } from "../i18n.js";
 import type { AttendeeRecord, FlightRecord } from "../repository.js";
 import { Layout } from "./Layout.js";
@@ -39,7 +38,7 @@ export const AttendeeFlightsPage: FC<{ locale: Locale; attendees: AttendeeFlight
     <Layout locale={locale} currentPath="/flights/attendees">
       <h1>{t.title}</h1>
       <p class="text-muted">
-        <a href="/flights">{t.overviewLink}</a>
+        <a href="/flights">{t.overviewLink}</a> · <a href="/flights/manage">{t.manageLink}</a>
       </p>
 
       {attendees.length === 0 ? (
@@ -79,21 +78,15 @@ export const AttendeeFlightsPage: FC<{ locale: Locale; attendees: AttendeeFlight
                         <td>{formatLocalDateTime(flight.departure_at, flight.from_utc_offset_minutes)}</td>
                         <td>{formatLocalDateTime(flight.arrival_at, flight.to_utc_offset_minutes)}</td>
                         <td>
-                          <form method="post" action={`/flights/attendees/${encodeURIComponent(attendee.name)}/remove`} class="inline-form">
-                            <input type="hidden" name="flight_id" value={flight.id} />
-                            <button type="submit" class="button-secondary">{flightLabels.remove}</button>
-                          </form>
+                          <a href={`/flights/${flight.id}/passengers`}>
+                            <button type="button">{t.managePassengers}</button>
+                          </a>
                         </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               )}
-            </section>
-
-            <section class="mt-2">
-              <h3>{t.addFlightTitle}</h3>
-              <FlightForm attendeeName={attendee.name} locale={locale} />
             </section>
           </article>
         ))

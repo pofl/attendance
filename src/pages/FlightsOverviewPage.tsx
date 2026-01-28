@@ -32,7 +32,7 @@ export const FlightsOverviewPage: FC<{ locale: Locale; flights: FlightAggregate[
     <Layout locale={locale} currentPath="/flights">
       <h1>{t.title}</h1>
       <p class="text-muted">
-        <a href="/flights/attendees">{t.attendeesLink}</a>
+        <a href="/flights/attendees">{t.attendeesLink}</a> · <a href="/flights/manage">{t.manageLink}</a>
       </p>
 
       {flights.length === 0 ? (

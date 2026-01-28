@@ -54,6 +54,7 @@ export interface Translations {
   flightsOverviewPage: {
     title: string;
     attendeesLink: string;
+    manageLink: string;
     noFlights: string;
     flight: string;
     route: string;
@@ -64,14 +65,47 @@ export interface Translations {
   attendeeFlightsPage: {
     title: string;
     overviewLink: string;
+    manageLink: string;
     openAttendee: string;
     noAttendees: string;
     existingFlights: string;
     noFlights: string;
-    addFlightTitle: string;
     route: string;
     departure: string;
     arrival: string;
+    actions: string;
+    managePassengers: string;
+  };
+  flightManagePage: {
+    title: string;
+    overviewLink: string;
+    attendeesLink: string;
+    addFlightTitle: string;
+    importJsonTitle: string;
+    importJsonHelp: string;
+    importJsonPlaceholder: string;
+    existingFlights: string;
+    noFlights: string;
+    managePassengers: string;
+    delete: string;
+    save: string;
+    details: string;
+    departure: string;
+    arrival: string;
+  };
+  flightPassengersPage: {
+    title: string;
+    backToFlights: string;
+    flightDetails: string;
+    departure: string;
+    arrival: string;
+    addPassengerTitle: string;
+    selectAttendee: string;
+    selectPlaceholder: string;
+    addPassengerButton: string;
+    currentPassengers: string;
+    noPassengers: string;
+    passengerName: string;
     actions: string;
   };
   flightForm: {
@@ -86,6 +120,14 @@ export interface Translations {
     remove: string;
   };
 }
+
+const FLIGHT_JSON_PLACEHOLDER = `{
+  "flight_number": "LH2123",
+  "from_airport": "DRS",
+  "to_airport": "MUC",
+  "departure_local": "2026-05-02T09:35+02:00",
+  "arrival_local": "2026-05-02T10:30+02:00"
+}`;
 
 const en_US: Translations = {
   common: {
@@ -141,6 +183,7 @@ const en_US: Translations = {
   flightsOverviewPage: {
     title: "Flight Overview",
     attendeesLink: "Edit attendee flights",
+    manageLink: "Manage flights",
     noFlights: "No flights found.",
     flight: "Flight",
     route: "Route",
@@ -151,14 +194,47 @@ const en_US: Translations = {
   attendeeFlightsPage: {
     title: "Attendee Flights",
     overviewLink: "View flight overview",
+    manageLink: "Manage flights",
     openAttendee: "Open Attendee",
     noAttendees: "No attendees found.",
     existingFlights: "Existing Flights",
     noFlights: "No flights assigned.",
-    addFlightTitle: "Add Flight",
     route: "Route",
     departure: "Departure (local)",
     arrival: "Arrival (local)",
+    actions: "Actions",
+    managePassengers: "Manage passengers",
+  },
+  flightManagePage: {
+    title: "Manage Flights",
+    overviewLink: "View flight overview",
+    attendeesLink: "View attendee flights",
+    addFlightTitle: "Add Flight",
+    importJsonTitle: "Import JSON",
+    importJsonHelp: "Paste a JSON object with flight fields. Include timezone offsets in the date strings. If provided, it overrides the individual fields above.",
+    importJsonPlaceholder: FLIGHT_JSON_PLACEHOLDER,
+    existingFlights: "Existing Flights",
+    noFlights: "No flights found.",
+    managePassengers: "Manage passengers",
+    delete: "Delete",
+    save: "Save changes",
+    details: "Details",
+    departure: "Departure (local)",
+    arrival: "Arrival (local)",
+  },
+  flightPassengersPage: {
+    title: "Manage Flight Passengers",
+    backToFlights: "Back to flights",
+    flightDetails: "Flight details",
+    departure: "Departure (local)",
+    arrival: "Arrival (local)",
+    addPassengerTitle: "Add passenger",
+    selectAttendee: "Attendee",
+    selectPlaceholder: "Select attendee",
+    addPassengerButton: "Add passenger",
+    currentPassengers: "Current passengers",
+    noPassengers: "No passengers assigned.",
+    passengerName: "Passenger",
     actions: "Actions",
   },
   flightForm: {
@@ -228,6 +304,7 @@ const de_DE: Translations = {
   flightsOverviewPage: {
     title: "Flugübersicht",
     attendeesLink: "Flüge der Teilnehmer bearbeiten",
+    manageLink: "Flüge verwalten",
     noFlights: "Keine Flüge gefunden.",
     flight: "Flug",
     route: "Route",
@@ -238,14 +315,47 @@ const de_DE: Translations = {
   attendeeFlightsPage: {
     title: "Teilnehmerflüge",
     overviewLink: "Flugübersicht anzeigen",
+    manageLink: "Flüge verwalten",
     openAttendee: "Teilnehmer öffnen",
     noAttendees: "Keine Teilnehmer gefunden.",
     existingFlights: "Vorhandene Flüge",
     noFlights: "Keine Flüge zugewiesen.",
-    addFlightTitle: "Flug hinzufügen",
     route: "Route",
     departure: "Abflug (lokal)",
     arrival: "Ankunft (lokal)",
+    actions: "Aktionen",
+    managePassengers: "Passagiere verwalten",
+  },
+  flightManagePage: {
+    title: "Flüge verwalten",
+    overviewLink: "Flugübersicht anzeigen",
+    attendeesLink: "Teilnehmerflüge anzeigen",
+    addFlightTitle: "Flug hinzufügen",
+    importJsonTitle: "JSON importieren",
+    importJsonHelp: "JSON-Objekt mit Flugdaten einfügen. Zeitzonen-Offsets in den Datumsstrings angeben. Wenn vorhanden, überschreibt es die Felder oben.",
+    importJsonPlaceholder: FLIGHT_JSON_PLACEHOLDER,
+    existingFlights: "Vorhandene Flüge",
+    noFlights: "Keine Flüge gefunden.",
+    managePassengers: "Passagiere verwalten",
+    delete: "Löschen",
+    save: "Änderungen speichern",
+    details: "Details",
+    departure: "Abflug (lokal)",
+    arrival: "Ankunft (lokal)",
+  },
+  flightPassengersPage: {
+    title: "Flugpassagiere verwalten",
+    backToFlights: "Zurück zu Flügen",
+    flightDetails: "Flugdetails",
+    departure: "Abflug (lokal)",
+    arrival: "Ankunft (lokal)",
+    addPassengerTitle: "Passagier hinzufügen",
+    selectAttendee: "Teilnehmer",
+    selectPlaceholder: "Teilnehmer auswählen",
+    addPassengerButton: "Passagier hinzufügen",
+    currentPassengers: "Aktuelle Passagiere",
+    noPassengers: "Keine Passagiere zugewiesen.",
+    passengerName: "Passagier",
     actions: "Aktionen",
   },
   flightForm: {

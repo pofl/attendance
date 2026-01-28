@@ -191,6 +191,60 @@ export function upsertFlight(db: Database, flight: Flight): FlightRecord {
   }
 }
 
+export function getAllFlights(db: Database): FlightRecord[] {
+  try {
+    const rows = db
+      .prepare("SELECT * FROM flights ORDER BY datetime(departure_at) ASC")
+      .all() as Record<string, unknown>[];
+    return rows.map((row) => parseFlightRecord(row));
+  } catch (error) {
+    console.error("Error getting all flights:", error);
+    throw error;
+  }
+}
+
+export function getFlightById(db: Database, id: number): FlightRecord | null {
+  try {
+    const row = db.prepare("SELECT * FROM flights WHERE id = ?").get(id);
+    if (!row) return null;
+    return parseFlightRecord(row as Record<string, unknown>);
+  } catch (error) {
+    console.error("Error getting flight by id:", error);
+    throw error;
+  }
+}
+
+export function updateFlightById(db: Database, id: number, flight: Flight): void {
+  try {
+    const statement = db.prepare(`
+      UPDATE flights SET
+        flight_number = @flight_number,
+        from_airport = @from_airport,
+        to_airport = @to_airport,
+        from_utc_offset_minutes = @from_utc_offset_minutes,
+        to_utc_offset_minutes = @to_utc_offset_minutes,
+        departure_at = @departure_at,
+        arrival_at = @arrival_at,
+        updated_at = (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+      WHERE id = @id
+    `);
+
+    statement.run({ id, ...flight });
+  } catch (error) {
+    console.error("Error updating flight:", error);
+    throw error;
+  }
+}
+
+export function deleteFlight(db: Database, id: number): void {
+  try {
+    db.prepare("DELETE FROM flights WHERE id = ?").run(id);
+  } catch (error) {
+    console.error("Error deleting flight:", error);
+    throw error;
+  }
+}
+
 export function upsertFlightForAttendee(db: Database, attendeeId: number, flight: Flight): FlightRecord {
   try {
     const flightRecord = upsertFlight(db, flight);
@@ -200,6 +254,37 @@ export function upsertFlightForAttendee(db: Database, attendeeId: number, flight
     return flightRecord;
   } catch (error) {
     console.error("Error assigning flight to attendee:", error);
+    throw error;
+  }
+}
+
+export function addPassengerToFlight(db: Database, flightId: number, attendeeId: number): void {
+  try {
+    db.prepare(
+      "INSERT OR IGNORE INTO flight_passengers (flight_id, attendee_id) VALUES (?, ?)"
+    ).run(flightId, attendeeId);
+  } catch (error) {
+    console.error("Error adding passenger to flight:", error);
+    throw error;
+  }
+}
+
+export function getPassengersForFlight(db: Database, flightId: number): AttendeeRecord[] {
+  try {
+    const rows = db
+      .prepare(
+        `
+          SELECT a.*
+          FROM attendees a
+          INNER JOIN flight_passengers fp ON fp.attendee_id = a.id
+          WHERE fp.flight_id = ?
+          ORDER BY a.name ASC
+        `
+      )
+      .all(flightId) as Record<string, unknown>[];
+    return rows.map((row) => parseAttendeeRecord(row));
+  } catch (error) {
+    console.error("Error getting passengers for flight:", error);
     throw error;
   }
 }
