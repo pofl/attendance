@@ -229,7 +229,9 @@ app.get("/attendees/:name", async (c) => {
         404
       );
     }
-    return c.html(<AttendeePage attendee={attendee} locale={locale} />);
+    const flights = getFlightsForAttendee(db, attendee.id);
+    const allFlights = getAllFlights(db);
+    return c.html(<AttendeePage attendee={attendee} flights={flights} allFlights={allFlights} locale={locale} />);
   } catch (e) {
     console.error(e);
     return c.html(
