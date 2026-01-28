@@ -14,25 +14,31 @@ Hono SSR with JSX, PostgreSQL (postgres.js), HTMX, TypeScript (NodeNext), custom
 ## Patterns
 
 ### Imports
+
 Use `.js` extensions in all relative imports (NodeNext resolution):
+
 ```ts
 import { Layout } from "./pages/Layout.js";
 ```
 
 ### Localization
+
 - Locale stored in browser cookie, read once per route
 - Pass `locale` prop through component tree
 
 ### Styling
+
 - No global form styling—use opt-in classes (e.g., `.form-card`)
 - Prefer utility classes for simple  but proper classes for reusable components
 - Keep components style-agnostic
 
 ### Forms
+
 - Regular submissions: POST-Redirect-GET
 - Dynamic updates: HTMX `hx-put`/`hx-post` with `hx-swap`
 
 ### Database
+
 - Separate input types (no id/timestamps) from output types (full record)
 - Use INSERT ON CONFLICT for upserts
 - Parameterized queries via tagged templates
