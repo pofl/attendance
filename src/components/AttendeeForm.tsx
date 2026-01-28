@@ -2,20 +2,6 @@ import type { FC } from "hono/jsx";
 import { getTranslations } from "../i18n.js";
 import type { AttendeeRecord } from "../repository.js";
 
-const padTimePart = (value: number): string => value.toString().padStart(2, "0");
-
-const formatDateForInput = (isoDate: string | null): string => {
-  if (!isoDate) return "";
-  const date = new Date(isoDate);
-  if (Number.isNaN(date.getTime())) return "";
-  const year = date.getFullYear();
-  const month = padTimePart(date.getMonth() + 1);
-  const day = padTimePart(date.getDate());
-  const hours = padTimePart(date.getHours());
-  const minutes = padTimePart(date.getMinutes());
-  return `${year}-${month}-${day}T${hours}:${minutes}`;
-};
-
 export const AttendeeForm: FC<{ attendee: AttendeeRecord; locale?: string }> = ({ attendee, locale }) => {
   const t = getTranslations(locale ?? attendee.locale ?? "en_US").attendeeForm;
   return (
@@ -26,26 +12,6 @@ export const AttendeeForm: FC<{ attendee: AttendeeRecord; locale?: string }> = (
           <option value="en_US" selected={attendee.locale === "en_US"}>English (US)</option>
           <option value="de_DE" selected={attendee.locale === "de_DE"}>Deutsch</option>
         </select>
-      </label>
-
-      <label>
-        {t.arrivalDate}:
-        <input type="datetime-local" name="arrival_date" value={formatDateForInput(attendee.arrival_date)} />
-      </label>
-
-      <label>
-        {t.arrivalFlight}:
-        <input type="text" name="arrival_flight" value={attendee.arrival_flight ?? ""} />
-      </label>
-
-      <label>
-        {t.departureDate}:
-        <input type="datetime-local" name="departure_date" value={formatDateForInput(attendee.departure_date)} />
-      </label>
-
-      <label>
-        {t.departureFlight}:
-        <input type="text" name="departure_flight" value={attendee.departure_flight ?? ""} />
       </label>
 
       <label>

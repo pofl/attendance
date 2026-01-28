@@ -74,6 +74,50 @@ const migrations: Migration[] = [
       CREATE INDEX IF NOT EXISTS flight_passengers_attendee_idx ON flight_passengers (attendee_id);
     `,
   },
+  {
+    id: "20260129-remove-attendee-flight-fields",
+    sql: `
+      CREATE TABLE IF NOT EXISTS attendees_new (
+        id INTEGER PRIMARY KEY,
+
+        created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
+        updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
+
+        name TEXT NOT NULL,
+        locale TEXT NOT NULL,
+        passport_status TEXT NOT NULL CHECK (passport_status IN ('valid', 'pending', 'none')),
+        visa_status TEXT NOT NULL CHECK (visa_status IN ('obtained', 'pending', 'none')),
+        dietary_requirements TEXT,
+        CONSTRAINT attendees_name_unique UNIQUE (name),
+        CONSTRAINT attendees_created_at_utc CHECK (created_at LIKE '%Z' AND datetime(created_at) IS NOT NULL),
+        CONSTRAINT attendees_updated_at_utc CHECK (updated_at LIKE '%Z' AND datetime(updated_at) IS NOT NULL)
+      );
+
+      INSERT INTO attendees_new (
+        id,
+        created_at,
+        updated_at,
+        name,
+        locale,
+        passport_status,
+        visa_status,
+        dietary_requirements
+      )
+      SELECT
+        id,
+        created_at,
+        updated_at,
+        name,
+        locale,
+        passport_status,
+        visa_status,
+        dietary_requirements
+      FROM attendees;
+
+      DROP TABLE attendees;
+      ALTER TABLE attendees_new RENAME TO attendees;
+    `,
+  },
 ];
 
 function main() {

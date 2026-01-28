@@ -30,10 +30,6 @@ export interface Translations {
   attendeeForm: {
     editTitle: string;
     locale: string;
-    arrivalDate: string;
-    arrivalFlight: string;
-    departureDate: string;
-    departureFlight: string;
     passportStatus: string;
     visaStatus: string;
     dietaryRequirements: string;
@@ -170,10 +166,6 @@ const en_US: Translations = {
   attendeeForm: {
     editTitle: "Edit Attendee",
     locale: "Locale",
-    arrivalDate: "Arrival Date",
-    arrivalFlight: "Arrival Flight",
-    departureDate: "Departure Date",
-    departureFlight: "Departure Flight",
     passportStatus: "Passport Status",
     visaStatus: "Visa Status",
     dietaryRequirements: "Dietary Requirements",
@@ -302,10 +294,6 @@ const de_DE: Translations = {
   attendeeForm: {
     editTitle: "Teilnehmer bearbeiten",
     locale: "Sprache",
-    arrivalDate: "Ankunftsdatum",
-    arrivalFlight: "Ankunftsflug",
-    departureDate: "Abreisedatum",
-    departureFlight: "Abflug",
     passportStatus: "Reisepass-Status",
     visaStatus: "Visum-Status",
     dietaryRequirements: "Ernährungsanforderungen",

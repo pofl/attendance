@@ -195,10 +195,6 @@ app.put("/attendees/:name", async (c) => {
     const attendee: Attendee = {
       name,
       locale: formData.locale as string,
-      arrival_date: toUtcIsoString(formData.arrival_date),
-      arrival_flight: (formData.arrival_flight as string) || null,
-      departure_date: toUtcIsoString(formData.departure_date),
-      departure_flight: (formData.departure_flight as string) || null,
       passport_status: formData.passport_status as "valid" | "pending" | "none",
       visa_status: formData.visa_status as "obtained" | "pending" | "none",
       dietary_requirements: (formData.dietary_requirements as string) || null,
@@ -273,10 +269,6 @@ app.post("/cockpit/attendees", async (c) => {
     const attendee: Attendee = {
       name,
       locale: "en_US",
-      arrival_date: null,
-      arrival_flight: null,
-      departure_date: null,
-      departure_flight: null,
       passport_status: "none",
       visa_status: "none",
       dietary_requirements: null,
