@@ -32,6 +32,48 @@ const migrations: Migration[] = [
       );
     `,
   },
+  {
+    id: "20260128-create-table-flights",
+    sql: `
+      CREATE TABLE IF NOT EXISTS flights (
+        id INTEGER PRIMARY KEY,
+
+        created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
+        updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
+
+        flight_number TEXT NOT NULL,
+        from_airport TEXT NOT NULL,
+        to_airport TEXT NOT NULL,
+        from_utc_offset_minutes INTEGER NOT NULL,
+        to_utc_offset_minutes INTEGER NOT NULL,
+        departure_at TEXT NOT NULL,
+        arrival_at TEXT NOT NULL,
+        CONSTRAINT flights_unique UNIQUE (flight_number, departure_at),
+        CONSTRAINT flights_created_at_utc CHECK (created_at LIKE '%Z' AND datetime(created_at) IS NOT NULL),
+        CONSTRAINT flights_updated_at_utc CHECK (updated_at LIKE '%Z' AND datetime(updated_at) IS NOT NULL),
+        CONSTRAINT flights_departure_at_utc CHECK (departure_at LIKE '%Z' AND datetime(departure_at) IS NOT NULL),
+        CONSTRAINT flights_arrival_at_utc CHECK (arrival_at LIKE '%Z' AND datetime(arrival_at) IS NOT NULL)
+      );
+
+      CREATE INDEX IF NOT EXISTS flights_departure_at_idx ON flights (departure_at);
+    `,
+  },
+  {
+    id: "20260128-create-table-flight-passengers",
+    sql: `
+      CREATE TABLE IF NOT EXISTS flight_passengers (
+        flight_id INTEGER NOT NULL,
+        attendee_id INTEGER NOT NULL,
+        created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
+        PRIMARY KEY (flight_id, attendee_id),
+        CONSTRAINT flight_passengers_created_at_utc CHECK (created_at LIKE '%Z' AND datetime(created_at) IS NOT NULL),
+        FOREIGN KEY (flight_id) REFERENCES flights (id) ON DELETE CASCADE,
+        FOREIGN KEY (attendee_id) REFERENCES attendees (id) ON DELETE CASCADE
+      );
+
+      CREATE INDEX IF NOT EXISTS flight_passengers_attendee_idx ON flight_passengers (attendee_id);
+    `,
+  },
 ];
 
 function main() {

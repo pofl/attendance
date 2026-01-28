@@ -157,6 +157,14 @@ button[type="submit"] {
   margin-top: 0.5rem;
 }
 
+.button-secondary {
+  background-color: #475569;
+}
+
+.button-secondary:hover {
+  background-color: #334155;
+}
+
 /* Utilities */
 .text-muted {
   color: var(--color-text-muted);
@@ -190,6 +198,49 @@ button[type="submit"] {
 .justify-center { justify-content: center; }
 .justify-between { justify-content: space-between; }
 .grow { flex-grow: 1; }
+
+.button-row {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.inline-form {
+  display: inline;
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+@media (max-width: 700px) {
+  .grid-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Tables */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.75rem;
+}
+
+.table th,
+.table td {
+  text-align: left;
+  padding: 0.75rem;
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: top;
+}
+
+.table th {
+  font-weight: 600;
+  color: var(--color-text);
+  background-color: var(--color-bg);
+}
 
 /* HTMX loading indicator */
 .htmx-request {

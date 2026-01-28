@@ -11,6 +11,9 @@ export interface Translations {
     enterName: string;
     namePlaceholder: string;
     go: string;
+    flightsTitle: string;
+    flightsOverview: string;
+    flightsAttendees: string;
   };
   attendeePage: {
     title: string;
@@ -48,6 +51,40 @@ export interface Translations {
     existingAttendees: string;
     noAttendees: string;
   };
+  flightsOverviewPage: {
+    title: string;
+    attendeesLink: string;
+    noFlights: string;
+    flight: string;
+    route: string;
+    departure: string;
+    arrival: string;
+    passengers: string;
+  };
+  attendeeFlightsPage: {
+    title: string;
+    overviewLink: string;
+    openAttendee: string;
+    noAttendees: string;
+    existingFlights: string;
+    noFlights: string;
+    addFlightTitle: string;
+    route: string;
+    departure: string;
+    arrival: string;
+    actions: string;
+  };
+  flightForm: {
+    flightNumber: string;
+    fromAirport: string;
+    toAirport: string;
+    fromOffset: string;
+    toOffset: string;
+    departureLocal: string;
+    arrivalLocal: string;
+    add: string;
+    remove: string;
+  };
 }
 
 const en_US: Translations = {
@@ -61,6 +98,9 @@ const en_US: Translations = {
     enterName: "Enter attendee name",
     namePlaceholder: "Name",
     go: "Go",
+    flightsTitle: "Flights",
+    flightsOverview: "Flight overview",
+    flightsAttendees: "Edit attendee flights",
   },
   attendeePage: {
     title: "Attendee",
@@ -98,6 +138,40 @@ const en_US: Translations = {
     existingAttendees: "Existing Attendees",
     noAttendees: "No attendees found.",
   },
+  flightsOverviewPage: {
+    title: "Flight Overview",
+    attendeesLink: "Edit attendee flights",
+    noFlights: "No flights found.",
+    flight: "Flight",
+    route: "Route",
+    departure: "Departure (local)",
+    arrival: "Arrival (local)",
+    passengers: "Passengers",
+  },
+  attendeeFlightsPage: {
+    title: "Attendee Flights",
+    overviewLink: "View flight overview",
+    openAttendee: "Open Attendee",
+    noAttendees: "No attendees found.",
+    existingFlights: "Existing Flights",
+    noFlights: "No flights assigned.",
+    addFlightTitle: "Add Flight",
+    route: "Route",
+    departure: "Departure (local)",
+    arrival: "Arrival (local)",
+    actions: "Actions",
+  },
+  flightForm: {
+    flightNumber: "Flight Number",
+    fromAirport: "From Airport",
+    toAirport: "To Airport",
+    fromOffset: "From UTC Offset (minutes)",
+    toOffset: "To UTC Offset (minutes)",
+    departureLocal: "Departure (local time)",
+    arrivalLocal: "Arrival (local time)",
+    add: "Add Flight",
+    remove: "Remove",
+  },
 };
 
 const de_DE: Translations = {
@@ -111,6 +185,9 @@ const de_DE: Translations = {
     enterName: "Teilnehmername eingeben",
     namePlaceholder: "Name",
     go: "Los",
+    flightsTitle: "Flüge",
+    flightsOverview: "Flugübersicht",
+    flightsAttendees: "Teilnehmerflüge bearbeiten",
   },
   attendeePage: {
     title: "Teilnehmer",
@@ -147,6 +224,40 @@ const de_DE: Translations = {
     createButton: "Teilnehmer erstellen",
     existingAttendees: "Vorhandene Teilnehmer",
     noAttendees: "Keine Teilnehmer gefunden.",
+  },
+  flightsOverviewPage: {
+    title: "Flugübersicht",
+    attendeesLink: "Flüge der Teilnehmer bearbeiten",
+    noFlights: "Keine Flüge gefunden.",
+    flight: "Flug",
+    route: "Route",
+    departure: "Abflug (lokal)",
+    arrival: "Ankunft (lokal)",
+    passengers: "Passagiere",
+  },
+  attendeeFlightsPage: {
+    title: "Teilnehmerflüge",
+    overviewLink: "Flugübersicht anzeigen",
+    openAttendee: "Teilnehmer öffnen",
+    noAttendees: "Keine Teilnehmer gefunden.",
+    existingFlights: "Vorhandene Flüge",
+    noFlights: "Keine Flüge zugewiesen.",
+    addFlightTitle: "Flug hinzufügen",
+    route: "Route",
+    departure: "Abflug (lokal)",
+    arrival: "Ankunft (lokal)",
+    actions: "Aktionen",
+  },
+  flightForm: {
+    flightNumber: "Flugnummer",
+    fromAirport: "Abflughafen",
+    toAirport: "Zielflughafen",
+    fromOffset: "UTC-Offset Abflug (Minuten)",
+    toOffset: "UTC-Offset Ziel (Minuten)",
+    departureLocal: "Abflug (lokale Zeit)",
+    arrivalLocal: "Ankunft (lokale Zeit)",
+    add: "Flug hinzufügen",
+    remove: "Entfernen",
   },
 };
 
