@@ -250,6 +250,32 @@ button[type="submit"] {
   grid-column: span 2;
 }
 
+[x-cloak] {
+  display: none !important;
+}
+
+.toggle-group {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.toggle-button {
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+  color: var(--color-text);
+  padding: 0.4rem 0.75rem;
+  border-radius: var(--radius);
+  font-weight: 600;
+}
+
+.toggle-button.active {
+  background: var(--color-primary);
+  color: #fff;
+  border-color: var(--color-primary);
+}
+
 @media (max-width: 700px) {
   .grid-2 {
     grid-template-columns: 1fr;

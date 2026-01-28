@@ -88,6 +88,8 @@ export interface Translations {
     overviewLink: string;
     attendeesLink: string;
     addFlightTitle: string;
+    fieldEntryToggle: string;
+    jsonToggle: string;
     importJsonTitle: string;
     importJsonHelp: string;
     importJsonPlaceholder: string;
@@ -224,6 +226,8 @@ const en_US: Translations = {
     overviewLink: "View flight overview",
     attendeesLink: "View attendee flights",
     addFlightTitle: "Add Flight",
+    fieldEntryToggle: "Enter fields",
+    jsonToggle: "Paste JSON",
     importJsonTitle: "Import JSON",
     importJsonHelp: "Paste a JSON object with flight fields. Include timezone offsets in the date strings. If provided, it overrides the individual fields above.",
     importJsonPlaceholder: FLIGHT_JSON_PLACEHOLDER,
@@ -352,6 +356,8 @@ const de_DE: Translations = {
     overviewLink: "Flugübersicht anzeigen",
     attendeesLink: "Teilnehmerflüge anzeigen",
     addFlightTitle: "Flug hinzufügen",
+    fieldEntryToggle: "Felder eingeben",
+    jsonToggle: "JSON einfügen",
     importJsonTitle: "JSON importieren",
     importJsonHelp: "JSON-Objekt mit Flugdaten einfügen. Zeitzonen-Offsets in den Datumsstrings angeben. Wenn vorhanden, überschreibt es die Felder oben.",
     importJsonPlaceholder: FLIGHT_JSON_PLACEHOLDER,

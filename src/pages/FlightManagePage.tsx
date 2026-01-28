@@ -49,44 +49,59 @@ export const FlightManagePage: FC<{ locale: Locale; flights: FlightRecord[] }> =
 
       <section class="card mb-3">
         <h2>{t.addFlightTitle}</h2>
-        <form method="post" action="/flights" class="grid-2">
-          <label>
-            {flightLabels.flightNumber}:
-            <input type="text" name="flight_number" placeholder="LH2025" />
-          </label>
-          <label>
-            {flightLabels.fromAirport}:
-            <input type="text" name="from_airport" placeholder="MUC" />
-          </label>
-          <label>
-            {flightLabels.fromOffset}:
-            <input type="number" name="from_utc_offset_minutes" placeholder="60" />
-          </label>
-          <label>
-            {flightLabels.departureLocal}:
-            <input type="datetime-local" name="departure_local" />
-          </label>
-          <label>
-            {flightLabels.toAirport}:
-            <input type="text" name="to_airport" placeholder="BLR" />
-          </label>
-          <label>
-            {flightLabels.toOffset}:
-            <input type="number" name="to_utc_offset_minutes" placeholder="330" />
-          </label>
-          <label>
-            {flightLabels.arrivalLocal}:
-            <input type="datetime-local" name="arrival_local" />
-          </label>
+        <form method="post" action="/flights" class="grid-2" x-data="{ mode: 'fields' }">
           <label class="grid-span-2">
+            {t.inputModeLabel}:
+            <select name="input_mode" x-model="mode">
+              <option value="fields">{t.fieldEntryToggle}</option>
+              <option value="json">{t.jsonToggle}</option>
+            </select>
+          </label>
+
+          <div class="grid-span-2" x-show="mode === 'fields'" x-cloak>
+            <div class="grid-2">
+              <label>
+                {flightLabels.flightNumber}:
+                <input type="text" name="flight_number" placeholder="LH2025" x-bind:disabled="mode !== 'fields'" />
+              </label>
+              <label>
+                {flightLabels.fromAirport}:
+                <input type="text" name="from_airport" placeholder="MUC" x-bind:disabled="mode !== 'fields'" />
+              </label>
+              <label>
+                {flightLabels.fromOffset}:
+                <input type="number" name="from_utc_offset_minutes" placeholder="60" x-bind:disabled="mode !== 'fields'" />
+              </label>
+              <label>
+                {flightLabels.departureLocal}:
+                <input type="datetime-local" name="departure_local" x-bind:disabled="mode !== 'fields'" />
+              </label>
+              <label>
+                {flightLabels.toAirport}:
+                <input type="text" name="to_airport" placeholder="BLR" x-bind:disabled="mode !== 'fields'" />
+              </label>
+              <label>
+                {flightLabels.toOffset}:
+                <input type="number" name="to_utc_offset_minutes" placeholder="330" x-bind:disabled="mode !== 'fields'" />
+              </label>
+              <label>
+                {flightLabels.arrivalLocal}:
+                <input type="datetime-local" name="arrival_local" x-bind:disabled="mode !== 'fields'" />
+              </label>
+            </div>
+          </div>
+
+          <label class="grid-span-2" x-show="mode === 'json'" x-cloak>
             {t.importJsonTitle}:
             <textarea
               name="flight_json"
               placeholder={t.importJsonPlaceholder}
               rows={8}
+              x-bind:disabled="mode !== 'json'"
             ></textarea>
             <div class="text-muted">{t.importJsonHelp}</div>
           </label>
+
           <div>
             <button type="submit">{flightLabels.add}</button>
           </div>
