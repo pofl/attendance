@@ -14,14 +14,6 @@ export const IndexPage: FC<{ locale: Locale }> = ({ locale }) => {
         </label>
         <button type="submit">{t.indexPage.go}</button>
       </form>
-
-      <section class="card mt-2">
-        <h2>{t.indexPage.flightsTitle}</h2>
-        <div class="button-row">
-          <a href="/flights"><button type="button">{t.indexPage.flightsOverview}</button></a>
-          <a href="/flights/attendees"><button type="button">{t.indexPage.flightsAttendees}</button></a>
-        </div>
-      </section>
     </Layout>
   );
 };

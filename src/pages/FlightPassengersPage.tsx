@@ -38,9 +38,6 @@ export const FlightPassengersPage: FC<{
   return (
     <Layout locale={locale} currentPath={`/flights/${flight.id}/passengers`}>
       <h1>{t.title}</h1>
-      <p class="text-muted">
-        <a href="/flights/manage">{t.backToFlights}</a>
-      </p>
 
       <section class="card mb-3">
         <h2>{t.flightDetails}</h2>

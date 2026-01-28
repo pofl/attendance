@@ -46,9 +46,6 @@ export const FlightManagePage: FC<{ locale: Locale; flights: FlightRecord[] }> =
   return (
     <Layout locale={locale} currentPath="/flights/manage">
       <h1>{t.title}</h1>
-      <p class="text-muted">
-        <a href="/flights">{t.overviewLink}</a> · <a href="/flights/attendees">{t.attendeesLink}</a>
-      </p>
 
       <section class="card mb-3">
         <h2>{t.addFlightTitle}</h2>

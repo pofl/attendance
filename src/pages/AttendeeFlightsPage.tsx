@@ -37,9 +37,6 @@ export const AttendeeFlightsPage: FC<{ locale: Locale; attendees: AttendeeFlight
   return (
     <Layout locale={locale} currentPath="/flights/attendees">
       <h1>{t.title}</h1>
-      <p class="text-muted">
-        <a href="/flights">{t.overviewLink}</a> · <a href="/flights/manage">{t.manageLink}</a>
-      </p>
 
       {attendees.length === 0 ? (
         <p>{t.noAttendees}</p>
