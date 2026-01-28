@@ -13,6 +13,8 @@ export const Layout: FC<LayoutProps> = (props) => {
   const locale = props.locale ?? "en_US";
   const t = getTranslations(locale);
   const showToggle = props.showLanguageToggle !== false;
+  const currentPath = props.currentPath ?? "";
+  const isActive = (path: string): boolean => currentPath === path;
 
   return (
     <html lang={locale.replace("_", "-")}>
@@ -27,6 +29,13 @@ export const Layout: FC<LayoutProps> = (props) => {
         {showToggle && props.currentPath && (
           <LanguageToggle locale={locale} currentPath={props.currentPath} />
         )}
+        <nav class="nav">
+          <a href="/" class={isActive("/") ? "active" : ""}>{t.common.nav.home}</a>
+          <a href="/cockpit" class={isActive("/cockpit") ? "active" : ""}>{t.common.nav.cockpit}</a>
+          <a href="/flights" class={isActive("/flights") ? "active" : ""}>{t.common.nav.flightsOverview}</a>
+          <a href="/flights/manage" class={isActive("/flights/manage") ? "active" : ""}>{t.common.nav.flightsManage}</a>
+          <a href="/flights/attendees" class={isActive("/flights/attendees") ? "active" : ""}>{t.common.nav.flightsAttendees}</a>
+        </nav>
         {props.children}
       </body>
     </html>

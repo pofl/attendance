@@ -5,6 +5,13 @@ export interface Translations {
     appTitle: string;
     error: string;
     notFound: string;
+    nav: {
+      home: string;
+      cockpit: string;
+      flightsOverview: string;
+      flightsManage: string;
+      flightsAttendees: string;
+    };
   };
   indexPage: {
     title: string;
@@ -134,6 +141,13 @@ const en_US: Translations = {
     appTitle: "Attendance",
     error: "Error",
     notFound: "Not Found",
+    nav: {
+      home: "Home",
+      cockpit: "Cockpit",
+      flightsOverview: "Flights",
+      flightsManage: "Manage Flights",
+      flightsAttendees: "Attendee Flights",
+    },
   },
   indexPage: {
     title: "Attendance",
@@ -255,6 +269,13 @@ const de_DE: Translations = {
     appTitle: "Anwesenheit",
     error: "Fehler",
     notFound: "Nicht gefunden",
+    nav: {
+      home: "Start",
+      cockpit: "Cockpit",
+      flightsOverview: "Flüge",
+      flightsManage: "Flüge verwalten",
+      flightsAttendees: "Teilnehmerflüge",
+    },
   },
   indexPage: {
     title: "Anwesenheit",

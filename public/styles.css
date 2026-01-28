@@ -35,6 +35,37 @@ body {
   margin-right: auto;
 }
 
+/* Navigation */
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  padding: 0.75rem 1rem;
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.nav a {
+  color: var(--color-text);
+  text-decoration: none;
+  font-weight: 600;
+  padding: 0.35rem 0.6rem;
+  border-radius: var(--radius);
+}
+
+.nav a:hover {
+  background-color: var(--color-bg);
+  text-decoration: none;
+}
+
+.nav a.active {
+  color: #fff;
+  background-color: var(--color-primary);
+}
+
 /* Typography */
 h1, h2, h3, h4, h5, h6 {
   margin-top: 0;
