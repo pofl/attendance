@@ -42,10 +42,10 @@ export const FlightPassengersPage: FC<{
       <section class="card mb-3">
         <h2>{t.flightDetails}</h2>
         <p>
-          <strong>{flight.flight_number}</strong> · {flight.from_airport} ({formatOffsetLabel(flight.from_utc_offset_minutes)}) → {flight.to_airport} ({formatOffsetLabel(flight.to_utc_offset_minutes)})
+          <strong>{flight.flight_number}</strong> · {flight.from_airport} → {flight.to_airport}
         </p>
         <p class="text-muted">
-          {t.departure}: {formatLocalDateTime(flight.departure_at, flight.from_utc_offset_minutes)} · {t.arrival}: {formatLocalDateTime(flight.arrival_at, flight.to_utc_offset_minutes)}
+          {t.departure}: {formatLocalDateTime(flight.departure_at, flight.from_utc_offset_minutes)} ({formatOffsetLabel(flight.from_utc_offset_minutes)}) · {t.arrival}: {formatLocalDateTime(flight.arrival_at, flight.to_utc_offset_minutes)} ({formatOffsetLabel(flight.to_utc_offset_minutes)})
         </p>
       </section>
 

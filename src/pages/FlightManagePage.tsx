@@ -123,17 +123,17 @@ export const FlightManagePage: FC<{ locale: Locale; flights: FlightRecord[] }> =
                   {flight.flight_number} · {flight.from_airport} → {flight.to_airport}
                 </div>
                 <div class="text-muted">
-                  {formatLocalDateTime(flight.departure_at, flight.from_utc_offset_minutes)}
+                  {formatLocalDateTime(flight.departure_at, flight.from_utc_offset_minutes)} ({formatOffsetLabel(flight.from_utc_offset_minutes)})
                 </div>
               </summary>
               <div class="accordion-content">
                 <div class="mb-2">
                   <strong>{t.details}</strong>
                   <div class="text-muted">
-                    {flight.from_airport} ({formatOffsetLabel(flight.from_utc_offset_minutes)}) → {flight.to_airport} ({formatOffsetLabel(flight.to_utc_offset_minutes)})
+                    {flight.from_airport} → {flight.to_airport}
                   </div>
                   <div class="text-muted">
-                    {t.departure}: {formatLocalDateTime(flight.departure_at, flight.from_utc_offset_minutes)} · {t.arrival}: {formatLocalDateTime(flight.arrival_at, flight.to_utc_offset_minutes)}
+                    {t.departure}: {formatLocalDateTime(flight.departure_at, flight.from_utc_offset_minutes)} ({formatOffsetLabel(flight.from_utc_offset_minutes)}) · {t.arrival}: {formatLocalDateTime(flight.arrival_at, flight.to_utc_offset_minutes)} ({formatOffsetLabel(flight.to_utc_offset_minutes)})
                   </div>
                 </div>
 
