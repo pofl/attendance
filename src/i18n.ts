@@ -89,6 +89,7 @@ export interface Translations {
     attendeesLink: string;
     addFlightTitle: string;
     inputModeLabel: string;
+    inputModeHint: string;
     fieldEntryToggle: string;
     jsonToggle: string;
     importJsonTitle: string;
@@ -228,6 +229,7 @@ const en_US: Translations = {
     attendeesLink: "View attendee flights",
     addFlightTitle: "Add Flight",
     inputModeLabel: "Input mode",
+    inputModeHint: "Choose how to add the flight details.",
     fieldEntryToggle: "Enter fields",
     jsonToggle: "Paste JSON",
     importJsonTitle: "Import JSON",
@@ -359,6 +361,7 @@ const de_DE: Translations = {
     attendeesLink: "Teilnehmerflüge anzeigen",
     addFlightTitle: "Flug hinzufügen",
     inputModeLabel: "Eingabemodus",
+    inputModeHint: "Wähle aus, wie du die Flugdaten eingeben möchtest.",
     fieldEntryToggle: "Felder eingeben",
     jsonToggle: "JSON einfügen",
     importJsonTitle: "JSON importieren",

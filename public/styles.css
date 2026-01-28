@@ -250,6 +250,30 @@ button[type="submit"] {
   grid-column: span 2;
 }
 
+.mode-panel {
+  border: 1px dashed var(--color-border);
+  background: var(--color-bg);
+  border-radius: var(--radius);
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.mode-label {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-weight: 600;
+  margin-bottom: 0;
+}
+
+.mode-select {
+  max-width: 220px;
+}
+
+.mode-hint {
+  margin: 0.4rem 0 0;
+}
+
 [x-cloak] {
   display: none !important;
 }

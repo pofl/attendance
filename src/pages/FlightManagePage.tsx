@@ -50,13 +50,16 @@ export const FlightManagePage: FC<{ locale: Locale; flights: FlightRecord[] }> =
       <section class="card mb-3">
         <h2>{t.addFlightTitle}</h2>
         <form method="post" action="/flights" class="grid-2" x-data="{ mode: 'fields' }">
-          <label>
-            {t.inputModeLabel}:
-            <select name="input_mode" x-model="mode">
-              <option value="fields">{t.fieldEntryToggle}</option>
-              <option value="json">{t.jsonToggle}</option>
-            </select>
-          </label>
+          <div class="grid-span-2 mode-panel">
+            <label class="mode-label">
+              {t.inputModeLabel}:
+              <select name="input_mode" x-model="mode" class="mode-select">
+                <option value="fields">{t.fieldEntryToggle}</option>
+                <option value="json">{t.jsonToggle}</option>
+              </select>
+            </label>
+            <p class="text-muted mode-hint">{t.inputModeHint}</p>
+          </div>
 
           <div class="grid-span-2" x-show="mode === 'fields'" x-cloak>
             <div class="grid-2">
