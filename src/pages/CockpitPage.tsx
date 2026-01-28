@@ -32,24 +32,34 @@ const formatLocalDateTime = (utcIso: string, offsetMinutes: number): string => {
   return `${year}-${month}-${day} ${hours}:${minutes}`;
 };
 
-const AttendeeAccordion: FC<{ attendee: AttendeeRecord; flights: FlightRecord[]; locale: Locale }> = ({ attendee, flights, locale }) => (
+const AttendeeAccordion: FC<{
+  attendee: AttendeeRecord;
+  flights: FlightRecord[];
+  allFlights: FlightRecord[];
+  locale: Locale;
+}> = ({ attendee, flights, allFlights, locale }) => {
+  const t = getTranslations(locale).cockpitPage;
+  const assignedIds = new Set(flights.map((flight) => flight.id));
+  const availableFlights = allFlights.filter((flight) => !assignedIds.has(flight.id));
+
+  return (
   <details key={attendee.id} class="accordion">
     <summary class="accordion-header"><div class="grow">{attendee.name}</div> <a href={`/attendees/${encodeURIComponent(attendee.name)}`}><button>Open</button></a></summary>
     <div class="accordion-content">
       <AttendeeForm attendee={attendee} locale={locale} />
       <section class="mt-2">
-        <h3>Flights</h3>
+        <h3>{t.flightsTitle}</h3>
         {flights.length === 0 ? (
-          <p class="text-muted">No flights assigned.</p>
+          <p class="text-muted">{t.flightsNone}</p>
         ) : (
           <table class="table">
             <thead>
               <tr>
-                <th>Flight</th>
-                <th>Route</th>
-                <th>Departure</th>
-                <th>Arrival</th>
-                <th>Actions</th>
+                <th>{t.flightsFlight}</th>
+                <th>{t.flightsRoute}</th>
+                <th>{t.flightsDeparture}</th>
+                <th>{t.flightsArrival}</th>
+                <th>{t.flightsActions}</th>
               </tr>
             </thead>
             <tbody>
@@ -64,21 +74,44 @@ const AttendeeAccordion: FC<{ attendee: AttendeeRecord; flights: FlightRecord[];
                     {formatLocalDateTime(flight.arrival_at, flight.to_utc_offset_minutes)} ({formatOffsetLabel(flight.to_utc_offset_minutes)})
                   </td>
                   <td>
-                    <a href={`/flights/${flight.id}/passengers`}>
-                      <button type="button">Manage passengers</button>
-                    </a>
+                    <form method="post" action={`/cockpit/attendees/${attendee.id}/flights/${flight.id}/remove`} class="inline-form">
+                      <button type="submit" class="button-secondary">{t.flightsRemove}</button>
+                    </form>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         )}
+
+        <div class="mt-2">
+          <h4>{t.flightsAddTitle}</h4>
+          {availableFlights.length === 0 ? (
+            <p class="text-muted">{t.flightsNoAvailable}</p>
+          ) : (
+            <form method="post" action={`/cockpit/attendees/${attendee.id}/flights`}>
+              <label>
+                {t.flightsSelectLabel}:
+                <select name="flight_id" required>
+                  <option value="">{t.flightsSelectPlaceholder}</option>
+                  {availableFlights.map((flight) => (
+                    <option value={flight.id} key={flight.id}>
+                      {flight.flight_number} · {flight.from_airport} → {flight.to_airport} · {formatLocalDateTime(flight.departure_at, flight.from_utc_offset_minutes)} ({formatOffsetLabel(flight.from_utc_offset_minutes)})
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <button type="submit">{t.flightsAdd}</button>
+            </form>
+          )}
+        </div>
       </section>
     </div>
   </details>
-);
+  );
+};
 
-export const CockpitPage: FC<{ attendees: AttendeeWithFlights[]; locale: Locale }> = ({ attendees, locale }) => {
+export const CockpitPage: FC<{ attendees: AttendeeWithFlights[]; allFlights: FlightRecord[]; locale: Locale }> = ({ attendees, allFlights, locale }) => {
   const t = getTranslations(locale);
   return (
     <Layout locale={locale} currentPath="/cockpit">
@@ -101,7 +134,7 @@ export const CockpitPage: FC<{ attendees: AttendeeWithFlights[]; locale: Locale 
           <p>{t.cockpitPage.noAttendees}</p>
         ) : (
           attendees.map(({ attendee, flights }) => (
-            <AttendeeAccordion key={attendee.id} attendee={attendee} flights={flights} locale={locale} />
+            <AttendeeAccordion key={attendee.id} attendee={attendee} flights={flights} allFlights={allFlights} locale={locale} />
           ))
         )}
       </section>

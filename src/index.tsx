@@ -250,7 +250,8 @@ app.get("/cockpit", async (c) => {
       attendee,
       flights: getFlightsForAttendee(db, attendee.id),
     }));
-    return c.html(<CockpitPage attendees={attendeesWithFlights} locale={locale} />);
+    const allFlights = getAllFlights(db);
+    return c.html(<CockpitPage attendees={attendeesWithFlights} allFlights={allFlights} locale={locale} />);
   } catch (e) {
     console.error(e);
     return c.html(
@@ -279,6 +280,40 @@ app.post("/cockpit/attendees", async (c) => {
     };
     upsertAttendee(db, attendee);
     return c.redirect(`/attendees/${encodeURIComponent(name)}`);
+  } catch (e) {
+    console.error(e);
+    return c.redirect("/cockpit");
+  }
+});
+
+app.post("/cockpit/attendees/:id/flights", async (c) => {
+  try {
+    const attendeeId = Number(c.req.param("id"));
+    if (!Number.isFinite(attendeeId)) {
+      return c.redirect("/cockpit");
+    }
+    const formData = await c.req.parseBody();
+    const flightId = Number(formData.flight_id);
+    if (!Number.isFinite(flightId)) {
+      return c.redirect("/cockpit");
+    }
+    addPassengerToFlight(db, flightId, attendeeId);
+    return c.redirect("/cockpit");
+  } catch (e) {
+    console.error(e);
+    return c.redirect("/cockpit");
+  }
+});
+
+app.post("/cockpit/attendees/:id/flights/:flightId/remove", async (c) => {
+  try {
+    const attendeeId = Number(c.req.param("id"));
+    const flightId = Number(c.req.param("flightId"));
+    if (!Number.isFinite(attendeeId) || !Number.isFinite(flightId)) {
+      return c.redirect("/cockpit");
+    }
+    removePassengerFromFlight(db, flightId, attendeeId);
+    return c.redirect("/cockpit");
   } catch (e) {
     console.error(e);
     return c.redirect("/cockpit");

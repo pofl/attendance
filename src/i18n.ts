@@ -53,6 +53,19 @@ export interface Translations {
     createButton: string;
     existingAttendees: string;
     noAttendees: string;
+    flightsTitle: string;
+    flightsNone: string;
+    flightsFlight: string;
+    flightsRoute: string;
+    flightsDeparture: string;
+    flightsArrival: string;
+    flightsActions: string;
+    flightsRemove: string;
+    flightsAddTitle: string;
+    flightsSelectLabel: string;
+    flightsSelectPlaceholder: string;
+    flightsAdd: string;
+    flightsNoAvailable: string;
   };
   flightsOverviewPage: {
     title: string;
@@ -189,6 +202,19 @@ const en_US: Translations = {
     createButton: "Create Attendee",
     existingAttendees: "Existing Attendees",
     noAttendees: "No attendees found.",
+    flightsTitle: "Flights",
+    flightsNone: "No flights assigned.",
+    flightsFlight: "Flight",
+    flightsRoute: "Route",
+    flightsDeparture: "Departure",
+    flightsArrival: "Arrival",
+    flightsActions: "Actions",
+    flightsRemove: "Remove",
+    flightsAddTitle: "Add flight",
+    flightsSelectLabel: "Select flight",
+    flightsSelectPlaceholder: "Choose a flight",
+    flightsAdd: "Add",
+    flightsNoAvailable: "All flights already assigned.",
   },
   flightsOverviewPage: {
     title: "Flight Overview",
@@ -317,6 +343,19 @@ const de_DE: Translations = {
     createButton: "Teilnehmer erstellen",
     existingAttendees: "Vorhandene Teilnehmer",
     noAttendees: "Keine Teilnehmer gefunden.",
+    flightsTitle: "Flüge",
+    flightsNone: "Keine Flüge zugewiesen.",
+    flightsFlight: "Flug",
+    flightsRoute: "Route",
+    flightsDeparture: "Abflug",
+    flightsArrival: "Ankunft",
+    flightsActions: "Aktionen",
+    flightsRemove: "Entfernen",
+    flightsAddTitle: "Flug hinzufügen",
+    flightsSelectLabel: "Flug auswählen",
+    flightsSelectPlaceholder: "Flug auswählen",
+    flightsAdd: "Hinzufügen",
+    flightsNoAvailable: "Alle Flüge sind bereits zugewiesen.",
   },
   flightsOverviewPage: {
     title: "Flugübersicht",
