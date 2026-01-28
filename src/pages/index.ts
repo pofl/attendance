@@ -1,4 +1,3 @@
-export { AttendeeFlightsPage } from "./AttendeeFlightsPage.js";
 export { AttendeePage } from "./AttendeePage.js";
 export { CockpitPage } from "./CockpitPage.js";
 export { FlightManagePage } from "./FlightManagePage.js";

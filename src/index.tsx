@@ -7,7 +7,6 @@ import { AttendeeForm } from "./components/index.js";
 import { openDatabase } from "./db.js";
 import { DEFAULT_LOCALE, getTranslations, isValidLocale, type Locale } from "./i18n.js";
 import {
-  AttendeeFlightsPage,
   AttendeePage,
   CockpitPage,
   FlightManagePage,
@@ -452,26 +451,6 @@ app.post("/flights/:id/delete", async (c) => {
   }
 });
 
-app.get("/flights/attendees", async (c) => {
-  const locale = getLocale(c);
-  const t = getTranslations(locale);
-  try {
-    const attendees = getAllAttendees(db);
-    const attendeesWithFlights = attendees.map((attendee) => ({
-      attendee,
-      flights: getFlightsForAttendee(db, attendee.id),
-    }));
-    return c.html(<AttendeeFlightsPage attendees={attendeesWithFlights} locale={locale} />);
-  } catch (e) {
-    console.error(e);
-    return c.html(
-      <Layout locale={locale} currentPath="/flights/attendees">
-        <p class="error">{t.common.error}</p>
-      </Layout>,
-      500
-    );
-  }
-});
 
 app.get("/flights/:id/passengers", async (c) => {
   const locale = getLocale(c);

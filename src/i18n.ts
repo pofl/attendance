@@ -10,7 +10,6 @@ export interface Translations {
       cockpit: string;
       flightsOverview: string;
       flightsManage: string;
-      flightsAttendees: string;
     };
   };
   indexPage: {
@@ -20,7 +19,6 @@ export interface Translations {
     go: string;
     flightsTitle: string;
     flightsOverview: string;
-    flightsAttendees: string;
   };
   attendeePage: {
     title: string;
@@ -77,20 +75,6 @@ export interface Translations {
     departure: string;
     arrival: string;
     passengers: string;
-  };
-  attendeeFlightsPage: {
-    title: string;
-    overviewLink: string;
-    manageLink: string;
-    openAttendee: string;
-    noAttendees: string;
-    existingFlights: string;
-    noFlights: string;
-    route: string;
-    departure: string;
-    arrival: string;
-    actions: string;
-    managePassengers: string;
   };
   flightManagePage: {
     title: string;
@@ -159,7 +143,6 @@ const en_US: Translations = {
       cockpit: "Cockpit",
       flightsOverview: "Flights",
       flightsManage: "Manage Flights",
-      flightsAttendees: "Attendee Flights",
     },
   },
   indexPage: {
@@ -169,7 +152,6 @@ const en_US: Translations = {
     go: "Go",
     flightsTitle: "Flights",
     flightsOverview: "Flight overview",
-    flightsAttendees: "Edit attendee flights",
   },
   attendeePage: {
     title: "Attendee",
@@ -226,20 +208,6 @@ const en_US: Translations = {
     departure: "Departure (local)",
     arrival: "Arrival (local)",
     passengers: "Passengers",
-  },
-  attendeeFlightsPage: {
-    title: "Attendee Flights",
-    overviewLink: "View flight overview",
-    manageLink: "Manage flights",
-    openAttendee: "Open Attendee",
-    noAttendees: "No attendees found.",
-    existingFlights: "Existing Flights",
-    noFlights: "No flights assigned.",
-    route: "Route",
-    departure: "Departure (local)",
-    arrival: "Arrival (local)",
-    actions: "Actions",
-    managePassengers: "Manage passengers",
   },
   flightManagePage: {
     title: "Manage Flights",
@@ -300,7 +268,6 @@ const de_DE: Translations = {
       cockpit: "Cockpit",
       flightsOverview: "Flüge",
       flightsManage: "Flüge verwalten",
-      flightsAttendees: "Teilnehmerflüge",
     },
   },
   indexPage: {
@@ -310,7 +277,6 @@ const de_DE: Translations = {
     go: "Los",
     flightsTitle: "Flüge",
     flightsOverview: "Flugübersicht",
-    flightsAttendees: "Teilnehmerflüge bearbeiten",
   },
   attendeePage: {
     title: "Teilnehmer",
@@ -367,20 +333,6 @@ const de_DE: Translations = {
     departure: "Abflug (lokal)",
     arrival: "Ankunft (lokal)",
     passengers: "Passagiere",
-  },
-  attendeeFlightsPage: {
-    title: "Teilnehmerflüge",
-    overviewLink: "Flugübersicht anzeigen",
-    manageLink: "Flüge verwalten",
-    openAttendee: "Teilnehmer öffnen",
-    noAttendees: "Keine Teilnehmer gefunden.",
-    existingFlights: "Vorhandene Flüge",
-    noFlights: "Keine Flüge zugewiesen.",
-    route: "Route",
-    departure: "Abflug (lokal)",
-    arrival: "Ankunft (lokal)",
-    actions: "Aktionen",
-    managePassengers: "Passagiere verwalten",
   },
   flightManagePage: {
     title: "Flüge verwalten",
