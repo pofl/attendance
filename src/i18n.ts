@@ -17,8 +17,6 @@ export interface Translations {
     enterName: string;
     namePlaceholder: string;
     go: string;
-    flightsTitle: string;
-    flightsOverview: string;
   };
   attendeePage: {
     title: string;
@@ -67,8 +65,6 @@ export interface Translations {
   };
   flightsOverviewPage: {
     title: string;
-    attendeesLink: string;
-    manageLink: string;
     noFlights: string;
     flight: string;
     route: string;
@@ -78,8 +74,6 @@ export interface Translations {
   };
   flightManagePage: {
     title: string;
-    overviewLink: string;
-    attendeesLink: string;
     addFlightTitle: string;
     inputModeLabel: string;
     inputModeHint: string;
@@ -99,7 +93,6 @@ export interface Translations {
   };
   flightPassengersPage: {
     title: string;
-    backToFlights: string;
     flightDetails: string;
     departure: string;
     arrival: string;
@@ -150,8 +143,6 @@ const en_US: Translations = {
     enterName: "Enter attendee name",
     namePlaceholder: "Name",
     go: "Go",
-    flightsTitle: "Flights",
-    flightsOverview: "Flight overview",
   },
   attendeePage: {
     title: "Attendee",
@@ -200,8 +191,6 @@ const en_US: Translations = {
   },
   flightsOverviewPage: {
     title: "Flight Overview",
-    attendeesLink: "Edit attendee flights",
-    manageLink: "Manage flights",
     noFlights: "No flights found.",
     flight: "Flight",
     route: "Route",
@@ -211,8 +200,6 @@ const en_US: Translations = {
   },
   flightManagePage: {
     title: "Manage Flights",
-    overviewLink: "View flight overview",
-    attendeesLink: "View attendee flights",
     addFlightTitle: "Add Flight",
     inputModeLabel: "Input mode",
     inputModeHint: "Choose how to add the flight details.",
@@ -232,7 +219,6 @@ const en_US: Translations = {
   },
   flightPassengersPage: {
     title: "Manage Flight Passengers",
-    backToFlights: "Back to flights",
     flightDetails: "Flight details",
     departure: "Departure (local)",
     arrival: "Arrival (local)",
@@ -275,8 +261,6 @@ const de_DE: Translations = {
     enterName: "Teilnehmername eingeben",
     namePlaceholder: "Name",
     go: "Los",
-    flightsTitle: "Flüge",
-    flightsOverview: "Flugübersicht",
   },
   attendeePage: {
     title: "Teilnehmer",
@@ -325,8 +309,6 @@ const de_DE: Translations = {
   },
   flightsOverviewPage: {
     title: "Flugübersicht",
-    attendeesLink: "Flüge der Teilnehmer bearbeiten",
-    manageLink: "Flüge verwalten",
     noFlights: "Keine Flüge gefunden.",
     flight: "Flug",
     route: "Route",
@@ -336,8 +318,6 @@ const de_DE: Translations = {
   },
   flightManagePage: {
     title: "Flüge verwalten",
-    overviewLink: "Flugübersicht anzeigen",
-    attendeesLink: "Teilnehmerflüge anzeigen",
     addFlightTitle: "Flug hinzufügen",
     inputModeLabel: "Eingabemodus",
     inputModeHint: "Wähle aus, wie du die Flugdaten eingeben möchtest.",
@@ -357,7 +337,6 @@ const de_DE: Translations = {
   },
   flightPassengersPage: {
     title: "Flugpassagiere verwalten",
-    backToFlights: "Zurück zu Flügen",
     flightDetails: "Flugdetails",
     departure: "Abflug (lokal)",
     arrival: "Ankunft (lokal)",
