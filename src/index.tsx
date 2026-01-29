@@ -246,7 +246,11 @@ app.get("/cockpit", async (c) => {
   const t = getTranslations(locale);
   try {
     const attendees = getAllAttendees(db);
-    return c.html(<CockpitPage attendees={attendees} locale={locale} />);
+    const attendeesWithFlights = attendees.map((attendee) => ({
+      attendee,
+      flights: getFlightsForAttendee(db, attendee.id),
+    }));
+    return c.html(<CockpitPage attendees={attendeesWithFlights} locale={locale} />);
   } catch (e) {
     console.error(e);
     return c.html(
