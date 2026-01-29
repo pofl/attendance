@@ -4,7 +4,7 @@
 
 Small TypeScript/Node web app for tracking attendee travel/visa info. It serves
 server-rendered JSX pages using Hono, stores data in SQLite via better-sqlite3,
-and uses HTMX for in-place form updates.
+and uses HTMX for in-place form updates. Post-Redirect-Get is used.
 
 ## Repo facts
 
