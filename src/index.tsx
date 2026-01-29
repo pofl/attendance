@@ -355,8 +355,6 @@ app.get("/flights/manage", async (c) => {
 });
 
 app.post("/flights", async (c) => {
-  const locale = getLocale(c);
-  const t = getTranslations(locale);
   try {
     const formData = await c.req.parseBody();
     const jsonPayload = typeof formData.flight_json === "string" ? formData.flight_json.trim() : "";
@@ -376,29 +374,17 @@ app.post("/flights", async (c) => {
     }
 
     if (!flight) {
-      return c.html(
-        <Layout locale={locale} currentPath="/flights/manage">
-          <p class="error">{t.common.error}</p>
-        </Layout>,
-        400
-      );
+      return c.redirect("/flights/manage");
     }
     upsertFlight(db, flight);
     return c.redirect("/flights/manage");
   } catch (e) {
     console.error(e);
-    return c.html(
-      <Layout locale={locale} currentPath="/flights/manage">
-        <p class="error">{t.common.error}</p>
-      </Layout>,
-      500
-    );
+    return c.redirect("/flights/manage");
   }
 });
 
 app.post("/flights/:id", async (c) => {
-  const locale = getLocale(c);
-  const t = getTranslations(locale);
   try {
     const id = Number(c.req.param("id"));
     if (!Number.isFinite(id)) {
@@ -409,29 +395,17 @@ app.post("/flights/:id", async (c) => {
     const flight = parseFlightFromPayload(formData as Record<string, unknown>);
 
     if (!flight) {
-      return c.html(
-        <Layout locale={locale} currentPath="/flights/manage">
-          <p class="error">{t.common.error}</p>
-        </Layout>,
-        400
-      );
+      return c.redirect("/flights/manage");
     }
     updateFlightById(db, id, flight);
     return c.redirect("/flights/manage");
   } catch (e) {
     console.error(e);
-    return c.html(
-      <Layout locale={locale} currentPath="/flights/manage">
-        <p class="error">{t.common.error}</p>
-      </Layout>,
-      500
-    );
+    return c.redirect("/flights/manage");
   }
 });
 
 app.post("/flights/:id/delete", async (c) => {
-  const locale = getLocale(c);
-  const t = getTranslations(locale);
   try {
     const id = Number(c.req.param("id"));
     if (!Number.isFinite(id)) {
@@ -441,12 +415,7 @@ app.post("/flights/:id/delete", async (c) => {
     return c.redirect("/flights/manage");
   } catch (e) {
     console.error(e);
-    return c.html(
-      <Layout locale={locale} currentPath="/flights/manage">
-        <p class="error">{t.common.error}</p>
-      </Layout>,
-      500
-    );
+    return c.redirect("/flights/manage");
   }
 });
 
@@ -490,8 +459,6 @@ app.get("/flights/:id/passengers", async (c) => {
 });
 
 app.post("/flights/:id/passengers", async (c) => {
-  const locale = getLocale(c);
-  const t = getTranslations(locale);
   try {
     const id = Number(c.req.param("id"));
     if (!Number.isFinite(id)) {
@@ -506,18 +473,11 @@ app.post("/flights/:id/passengers", async (c) => {
     return c.redirect(`/flights/${id}/passengers`);
   } catch (e) {
     console.error(e);
-    return c.html(
-      <Layout locale={locale} currentPath="/flights/manage">
-        <p class="error">{t.common.error}</p>
-      </Layout>,
-      500
-    );
+    return c.redirect(`/flights/${Number.isFinite(Number(c.req.param("id"))) ? c.req.param("id") : ""}/passengers`);
   }
 });
 
 app.post("/flights/:id/passengers/:attendeeId/remove", async (c) => {
-  const locale = getLocale(c);
-  const t = getTranslations(locale);
   try {
     const flightId = Number(c.req.param("id"));
     const attendeeId = Number(c.req.param("attendeeId"));
@@ -528,12 +488,7 @@ app.post("/flights/:id/passengers/:attendeeId/remove", async (c) => {
     return c.redirect(`/flights/${flightId}/passengers`);
   } catch (e) {
     console.error(e);
-    return c.html(
-      <Layout locale={locale} currentPath="/flights/manage">
-        <p class="error">{t.common.error}</p>
-      </Layout>,
-      500
-    );
+    return c.redirect("/flights/manage");
   }
 });
 
