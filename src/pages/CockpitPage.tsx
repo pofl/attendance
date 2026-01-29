@@ -1,5 +1,4 @@
 import type { FC } from "hono/jsx";
-import { AttendeeForm } from "../components/AttendeeForm.js";
 import { getTranslations, type Locale } from "../i18n.js";
 import type { AttendeeRecord, FlightRecord } from "../repository.js";
 import { formatLocalDateTime, formatOffsetLabel } from "../utils/flightFormat.js";
@@ -14,31 +13,35 @@ interface AttendeeWithFlights {
 const AttendeeAccordion: FC<{
   attendee: AttendeeRecord;
   flights: FlightRecord[];
-  allFlights: FlightRecord[];
   locale: Locale;
-}> = ({ attendee, flights, allFlights, locale }) => {
-  const t = getTranslations(locale).cockpitPage;
-  const assignedIds = new Set(flights.map((flight) => flight.id));
-  const availableFlights = allFlights.filter((flight) => !assignedIds.has(flight.id));
+}> = ({ attendee, flights, locale }) => {
+  const t = getTranslations(locale);
 
   return (
   <details key={attendee.id} class="accordion">
     <summary class="accordion-header"><div class="grow">{attendee.name}</div> <a href={`/attendees/${encodeURIComponent(attendee.name)}`}><button>Open</button></a></summary>
     <div class="accordion-content">
-      <AttendeeForm attendee={attendee} locale={locale} />
+      <section>
+        <h3>{t.attendeeForm.editTitle}</h3>
+        <ul>
+          <li><strong>{t.attendeeForm.locale}:</strong> {attendee.locale}</li>
+          <li><strong>{t.attendeeForm.passportStatus}:</strong> {t.attendeeForm.passportOptions[attendee.passport_status]}</li>
+          <li><strong>{t.attendeeForm.visaStatus}:</strong> {t.attendeeForm.visaOptions[attendee.visa_status]}</li>
+          <li><strong>{t.attendeeForm.dietaryRequirements}:</strong> {attendee.dietary_requirements ?? "-"}</li>
+        </ul>
+      </section>
       <section class="mt-2">
-        <h3>{t.flightsTitle}</h3>
+        <h3>{t.cockpitPage.flightsTitle}</h3>
         {flights.length === 0 ? (
-          <p class="text-muted">{t.flightsNone}</p>
+          <p class="text-muted">{t.cockpitPage.flightsNone}</p>
         ) : (
           <table class="table">
             <thead>
               <tr>
-                <th>{t.flightsFlight}</th>
-                <th>{t.flightsRoute}</th>
-                <th>{t.flightsDeparture}</th>
-                <th>{t.flightsArrival}</th>
-                <th>{t.flightsActions}</th>
+                <th>{t.cockpitPage.flightsFlight}</th>
+                <th>{t.cockpitPage.flightsRoute}</th>
+                <th>{t.cockpitPage.flightsDeparture}</th>
+                <th>{t.cockpitPage.flightsArrival}</th>
               </tr>
             </thead>
             <tbody>
@@ -52,45 +55,18 @@ const AttendeeAccordion: FC<{
                   <td>
                     {formatLocalDateTime(flight.arrival_at, flight.to_utc_offset_minutes)} ({formatOffsetLabel(flight.to_utc_offset_minutes)})
                   </td>
-                  <td>
-                    <form method="post" action={`/cockpit/attendees/${attendee.id}/flights/${flight.id}/remove`} class="inline-form">
-                      <button type="submit" class="button-secondary">{t.flightsRemove}</button>
-                    </form>
-                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         )}
-
-        <div class="mt-2">
-          <h4>{t.flightsAddTitle}</h4>
-          {availableFlights.length === 0 ? (
-            <p class="text-muted">{t.flightsNoAvailable}</p>
-          ) : (
-            <form method="post" action={`/cockpit/attendees/${attendee.id}/flights`}>
-              <label>
-                {t.flightsSelectLabel}:
-                <select name="flight_id" required>
-                  <option value="">{t.flightsSelectPlaceholder}</option>
-                  {availableFlights.map((flight) => (
-                    <option value={flight.id} key={flight.id}>
-                      {flight.flight_number} · {flight.from_airport} → {flight.to_airport} · {formatLocalDateTime(flight.departure_at, flight.from_utc_offset_minutes)} ({formatOffsetLabel(flight.from_utc_offset_minutes)})
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <button type="submit">{t.flightsAdd}</button>
-            </form>
-          )}
-        </div>
       </section>
     </div>
   </details>
   );
 };
 
-export const CockpitPage: FC<{ attendees: AttendeeWithFlights[]; allFlights: FlightRecord[]; locale: Locale }> = ({ attendees, allFlights, locale }) => {
+export const CockpitPage: FC<{ attendees: AttendeeWithFlights[]; locale: Locale }> = ({ attendees, locale }) => {
   const t = getTranslations(locale);
   return (
     <Layout locale={locale} currentPath="/cockpit">
@@ -113,7 +89,7 @@ export const CockpitPage: FC<{ attendees: AttendeeWithFlights[]; allFlights: Fli
           <p>{t.cockpitPage.noAttendees}</p>
         ) : (
           attendees.map(({ attendee, flights }) => (
-            <AttendeeAccordion key={attendee.id} attendee={attendee} flights={flights} allFlights={allFlights} locale={locale} />
+            <AttendeeAccordion key={attendee.id} attendee={attendee} flights={flights} locale={locale} />
           ))
         )}
       </section>

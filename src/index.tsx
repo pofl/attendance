@@ -251,8 +251,7 @@ app.get("/cockpit", async (c) => {
       attendee,
       flights: getFlightsForAttendee(db, attendee.id),
     }));
-    const allFlights = getAllFlights(db);
-    return c.html(<CockpitPage attendees={attendeesWithFlights} allFlights={allFlights} locale={locale} />);
+    return c.html(<CockpitPage attendees={attendeesWithFlights} locale={locale} />);
   } catch (e) {
     console.error(e);
     return c.html(
