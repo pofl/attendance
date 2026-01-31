@@ -3,8 +3,10 @@
 ## Summary
 
 Small TypeScript/Node web app for tracking attendee travel/visa info. It serves
-server-rendered JSX pages using Hono, stores data in SQLite via better-sqlite3,
-and uses HTMX for in-place form updates. Post-Redirect-Get is used.
+server-rendered JSX pages using Hono, uses the Post-Redirect-Get pattern, and
+stores data in SQLite via better-sqlite3. For interactivity, Alpine.js is used
+for client-side stateful interaction and HTMX is used for interactions with the
+server.
 
 ## Repo facts
 
