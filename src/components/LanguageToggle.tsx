@@ -3,7 +3,7 @@ import type { Locale } from "../i18n.js";
 
 export const LanguageToggle: FC<{ locale: Locale; currentPath: string }> = ({ locale, currentPath }) => {
   return (
-    <form method="post" action="/set-locale" class="language-toggle">
+    <form method="post" action="/set-locale" class="language-toggle" hx-post="/set-locale">
       <input type="hidden" name="redirect" value={currentPath} />
       <select
         name="locale"

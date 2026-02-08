@@ -55,6 +55,19 @@ export function getAttendeeByName(db: Database, name: string): AttendeeRecord | 
   }
 }
 
+export function getAttendeeById(db: Database, id: number): AttendeeRecord | null {
+  try {
+    const row = db.prepare("SELECT * FROM attendees WHERE id = ?").get(id);
+    if (!row) {
+      return null;
+    }
+    return parseAttendeeRecord(row as Record<string, unknown>);
+  } catch (error) {
+    console.error("Error getting attendee by id:", error);
+    throw error;
+  }
+}
+
 export function upsertAttendee(db: Database, attendee: Attendee): void {
   try {
     const statement = db.prepare(`
