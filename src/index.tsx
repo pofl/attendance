@@ -1,8 +1,10 @@
 import { serve } from "@hono/node-server";
 import { serveStatic } from "@hono/node-server/serve-static";
+import { zValidator } from "@hono/zod-validator";
 import { config } from "dotenv";
 import { Hono } from "hono";
 import { getCookie, setCookie } from "hono/cookie";
+import { z } from "zod";
 import {
   AttendeeFlightsSection,
   AttendeeForm,
@@ -140,6 +142,24 @@ const parseFlightFromPayload = (payload: Record<string, unknown>): Flight | null
   };
 };
 
+const nameParamSchema = z.object({
+  name: z.string().trim().min(1),
+});
+
+const idParamSchema = z.object({
+  id: z.coerce.number().int().positive(),
+});
+
+const flightIdParamSchema = z.object({
+  id: z.coerce.number().int().positive(),
+  flightId: z.coerce.number().int().positive(),
+});
+
+const attendeeFlightParamSchema = z.object({
+  id: z.coerce.number().int().positive(),
+  attendeeId: z.coerce.number().int().positive(),
+});
+
 // Route to set locale preference
 app.post("/set-locale", async (c) => {
   const formData = await c.req.parseBody();
@@ -174,8 +194,8 @@ app.post("/attendee", async (c) => {
   return c.body(null, 204);
 });
 
-app.put("/attendees/:name", async (c) => {
-  const name = c.req.param("name");
+app.put("/attendees/:name", zValidator("param", nameParamSchema), async (c) => {
+  const { name } = c.req.valid("param");
   const locale = getLocale(c);
   const t = getTranslations(locale);
   try {
@@ -203,8 +223,8 @@ app.put("/attendees/:name", async (c) => {
   }
 });
 
-app.get("/attendees/:name", async (c) => {
-  const name = c.req.param("name");
+app.get("/attendees/:name", zValidator("param", nameParamSchema), async (c) => {
+  const { name } = c.req.valid("param");
   const locale = getLocale(c);
   const t = getTranslations(locale);
   try {
@@ -314,14 +334,11 @@ app.post("/cockpit/attendees", async (c) => {
   }
 });
 
-app.post("/cockpit/attendees/:id/flights", async (c) => {
+app.post("/cockpit/attendees/:id/flights", zValidator("param", idParamSchema), async (c) => {
   const locale = getLocale(c);
   const t = getTranslations(locale);
   try {
-    const attendeeId = Number(c.req.param("id"));
-    if (!Number.isFinite(attendeeId)) {
-      return c.body(null, 400);
-    }
+    const { id: attendeeId } = c.req.valid("param");
     const formData = await c.req.parseBody();
     const flightId = Number(formData.flight_id);
     if (!Number.isFinite(flightId)) {
@@ -384,15 +401,14 @@ app.post("/cockpit/attendees/:id/flights", async (c) => {
   }
 });
 
-app.post("/cockpit/attendees/:id/flights/:flightId/remove", async (c) => {
+app.post(
+  "/cockpit/attendees/:id/flights/:flightId/remove",
+  zValidator("param", flightIdParamSchema),
+  async (c) => {
   const locale = getLocale(c);
   const t = getTranslations(locale);
   try {
-    const attendeeId = Number(c.req.param("id"));
-    const flightId = Number(c.req.param("flightId"));
-    if (!Number.isFinite(attendeeId) || !Number.isFinite(flightId)) {
-      return c.body(null, 400);
-    }
+    const { id: attendeeId, flightId } = c.req.valid("param");
     removePassengerFromFlight(db, flightId, attendeeId);
     const attendee = getAttendeeById(db, attendeeId);
     if (!attendee) {
@@ -432,7 +448,7 @@ app.post("/cockpit/attendees/:id/flights/:flightId/remove", async (c) => {
       500
     );
   }
-});
+);
 
 app.get("/flights", async (c) => {
   const locale = getLocale(c);
@@ -511,14 +527,11 @@ app.post("/flights", async (c) => {
   }
 });
 
-app.post("/flights/:id", async (c) => {
+app.post("/flights/:id", zValidator("param", idParamSchema), async (c) => {
   const locale = getLocale(c);
   const t = getTranslations(locale);
   try {
-    const id = Number(c.req.param("id"));
-    if (!Number.isFinite(id)) {
-      return c.body(null, 400);
-    }
+    const { id } = c.req.valid("param");
 
     const formData = await c.req.parseBody();
     const flight = parseFlightFromPayload(formData as Record<string, unknown>);
@@ -545,14 +558,11 @@ app.post("/flights/:id", async (c) => {
   }
 });
 
-app.post("/flights/:id/delete", async (c) => {
+app.post("/flights/:id/delete", zValidator("param", idParamSchema), async (c) => {
   const locale = getLocale(c);
   const t = getTranslations(locale);
   try {
-    const id = Number(c.req.param("id"));
-    if (!Number.isFinite(id)) {
-      return c.body(null, 400);
-    }
+    const { id } = c.req.valid("param");
     deleteFlight(db, id);
     const flights = getAllFlights(db);
     return c.html(
@@ -569,14 +579,11 @@ app.post("/flights/:id/delete", async (c) => {
 });
 
 
-app.get("/flights/:id/passengers", async (c) => {
+app.get("/flights/:id/passengers", zValidator("param", idParamSchema), async (c) => {
   const locale = getLocale(c);
   const t = getTranslations(locale);
   try {
-    const id = Number(c.req.param("id"));
-    if (!Number.isFinite(id)) {
-      return c.redirect("/flights/manage");
-    }
+    const { id } = c.req.valid("param");
     const flight = getFlightById(db, id);
     if (!flight) {
       return c.html(
@@ -607,14 +614,11 @@ app.get("/flights/:id/passengers", async (c) => {
   }
 });
 
-app.post("/flights/:id/passengers", async (c) => {
+app.post("/flights/:id/passengers", zValidator("param", idParamSchema), async (c) => {
   const locale = getLocale(c);
   const t = getTranslations(locale);
   try {
-    const id = Number(c.req.param("id"));
-    if (!Number.isFinite(id)) {
-      return c.body(null, 400);
-    }
+    const { id } = c.req.valid("param");
     const formData = await c.req.parseBody();
     const attendeeId = Number(formData.attendee_id);
     if (!Number.isFinite(attendeeId)) {
@@ -670,15 +674,14 @@ app.post("/flights/:id/passengers", async (c) => {
   }
 });
 
-app.post("/flights/:id/passengers/:attendeeId/remove", async (c) => {
+app.post(
+  "/flights/:id/passengers/:attendeeId/remove",
+  zValidator("param", attendeeFlightParamSchema),
+  async (c) => {
   const locale = getLocale(c);
   const t = getTranslations(locale);
   try {
-    const flightId = Number(c.req.param("id"));
-    const attendeeId = Number(c.req.param("attendeeId"));
-    if (!Number.isFinite(flightId) || !Number.isFinite(attendeeId)) {
-      return c.body(null, 400);
-    }
+    const { id: flightId, attendeeId } = c.req.valid("param");
     removePassengerFromFlight(db, flightId, attendeeId);
     const passengers = getPassengersForFlight(db, flightId);
     const flight = getFlightById(db, flightId);
@@ -713,7 +716,7 @@ app.post("/flights/:id/passengers/:attendeeId/remove", async (c) => {
     }
     return c.body(null, 500);
   }
-});
+);
 
 serve(
   {

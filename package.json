@@ -9,9 +9,11 @@
   },
   "dependencies": {
     "@hono/node-server": "^1.19.8",
+    "@hono/zod-validator": "^0.4.3",
     "hono": "^4.11.3",
     "dotenv": "^17.2.0",
-    "better-sqlite3": "^12.6.2"
+    "better-sqlite3": "^12.6.2",
+    "zod": "^3.24.2"
   },
   "devDependencies": {
     "@types/node": "^20.11.17",
