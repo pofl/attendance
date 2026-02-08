@@ -164,26 +164,6 @@ app.post("/attendee", async (c) => {
   return c.redirect(`/attendees/${encodeURIComponent(name)}`);
 });
 
-app.get("/hello", (c) => {
-  return c.html(<p>"Hello Hono!"</p>);
-});
-
-app.get("/part/attendees/:name", async (c) => {
-  const name = c.req.param("name");
-  const locale = getLocale(c);
-  const t = getTranslations(locale);
-  try {
-    const attendee = getAttendeeByName(db, name);
-    if (!attendee) {
-      return c.html(<p class="error">{t.attendeePage.notFoundMessage}: {name}</p>, 404);
-    }
-    return c.html(<AttendeeForm attendee={attendee} locale={locale} />);
-  } catch (e) {
-    console.error(e);
-    return c.html(<p class="error">{t.common.error}</p>, 500);
-  }
-});
-
 app.put("/attendees/:name", async (c) => {
   const name = c.req.param("name");
   const locale = getLocale(c);
