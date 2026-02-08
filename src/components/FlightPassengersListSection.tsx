@@ -35,8 +35,6 @@ export const FlightPassengersListSection: FC<{
                 </td>
                 <td>
                   <form
-                    method="post"
-                    action={`/flights/${flight.id}/passengers/${passenger.id}/remove`}
                     class="inline-form"
                     hx-post={`/flights/${flight.id}/passengers/${passenger.id}/remove`}
                     hx-target="#flight-passengers"

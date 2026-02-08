@@ -1,7 +1,7 @@
 import type { FC } from "hono/jsx";
+import { FlightPassengersListSection } from "../components/FlightPassengersListSection.js";
 import { getTranslations, type Locale } from "../i18n.js";
 import type { AttendeeRecord, FlightRecord } from "../repository.js";
-import { FlightPassengersListSection } from "../components/FlightPassengersListSection.js";
 import { formatLocalDateTime, formatOffsetLabel } from "../utils/flightFormat.js";
 import { Layout } from "./Layout.js";
 
@@ -29,8 +29,6 @@ export const FlightPassengersPage: FC<{
       <section class="card mb-3">
         <h2>{t.addPassengerTitle}</h2>
         <form
-          method="post"
-          action={`/flights/${flight.id}/passengers`}
           hx-post={`/flights/${flight.id}/passengers`}
           hx-target="#flight-passengers"
           hx-swap="outerHTML"

@@ -1,7 +1,7 @@
 import type { FC } from "hono/jsx";
+import { FlightManageFlightsSection } from "../components/FlightManageFlightsSection.js";
 import { getTranslations, type Locale } from "../i18n.js";
 import type { FlightRecord } from "../repository.js";
-import { FlightManageFlightsSection } from "../components/FlightManageFlightsSection.js";
 import { Layout } from "./Layout.js";
 
 export const FlightManagePage: FC<{ locale: Locale; flights: FlightRecord[] }> = ({ locale, flights }) => {
@@ -15,8 +15,6 @@ export const FlightManagePage: FC<{ locale: Locale; flights: FlightRecord[] }> =
       <section class="card mb-3">
         <h2>{t.addFlightTitle}</h2>
         <form
-          method="post"
-          action="/flights"
           class="grid-2"
           x-data="{ mode: 'fields' }"
           hx-post="/flights"

@@ -1,7 +1,7 @@
 import type { FC } from "hono/jsx";
+import { CockpitAttendeeListSection } from "../components/CockpitAttendeeListSection.js";
 import { getTranslations, type Locale } from "../i18n.js";
 import type { AttendeeRecord, FlightRecord } from "../repository.js";
-import { CockpitAttendeeListSection } from "../components/CockpitAttendeeListSection.js";
 import { Layout } from "./Layout.js";
 
 interface AttendeeWithFlights {
@@ -18,8 +18,6 @@ export const CockpitPage: FC<{ attendees: AttendeeWithFlights[]; locale: Locale 
       <section class="card mb-3">
         <h2>{t.cockpitPage.createNew}</h2>
         <form
-          method="post"
-          action="/cockpit/attendees"
           hx-post="/cockpit/attendees"
           hx-target="#cockpit-attendees"
           hx-swap="outerHTML"

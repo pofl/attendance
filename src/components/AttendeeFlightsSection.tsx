@@ -8,14 +8,18 @@ export const AttendeeFlightsSection: FC<{
   flights: FlightRecord[];
   allFlights: FlightRecord[];
   locale: Locale;
-}> = ({ attendee, flights, allFlights, locale }) => {
+  message?: string | null;
+  messageType?: "success" | "error";
+}> = ({ attendee, flights, allFlights, locale, message, messageType = "success" }) => {
   const t = getTranslations(locale);
+  const messageClass = messageType === "error" ? "error" : "text-success";
   const assignedIds = new Set(flights.map((flight) => flight.id));
   const availableFlights = allFlights.filter((flight) => !assignedIds.has(flight.id));
 
   return (
     <section id={`attendee-flights-${attendee.id}`} class="card mt-2">
       <h2>{t.cockpitPage.flightsTitle}</h2>
+      {message && <p class={messageClass}>{message}</p>}
       {flights.length === 0 ? (
         <p class="text-muted">{t.cockpitPage.flightsNone}</p>
       ) : (
@@ -42,8 +46,6 @@ export const AttendeeFlightsSection: FC<{
                 </td>
                 <td>
                   <form
-                    method="post"
-                    action={`/cockpit/attendees/${attendee.id}/flights/${flight.id}/remove`}
                     class="inline-form"
                     hx-post={`/cockpit/attendees/${attendee.id}/flights/${flight.id}/remove`}
                     hx-target={`#attendee-flights-${attendee.id}`}
@@ -64,8 +66,6 @@ export const AttendeeFlightsSection: FC<{
           <p class="text-muted">{t.cockpitPage.flightsNoAvailable}</p>
         ) : (
           <form
-            method="post"
-            action={`/cockpit/attendees/${attendee.id}/flights`}
             hx-post={`/cockpit/attendees/${attendee.id}/flights`}
             hx-target={`#attendee-flights-${attendee.id}`}
             hx-swap="outerHTML"

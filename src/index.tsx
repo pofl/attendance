@@ -4,8 +4,8 @@ import { config } from "dotenv";
 import { Hono } from "hono";
 import { getCookie, setCookie } from "hono/cookie";
 import {
-  AttendeeForm,
   AttendeeFlightsSection,
+  AttendeeForm,
   CockpitAttendeeListSection,
   FlightManageFlightsSection,
   FlightPassengersListSection,
@@ -154,12 +154,8 @@ app.post("/set-locale", async (c) => {
     });
   }
 
-  if (c.req.header("HX-Request")) {
-    c.header("HX-Redirect", redirect);
-    return c.body(null, 204);
-  }
-
-  return c.redirect(redirect);
+  c.header("HX-Redirect", redirect);
+  return c.body(null, 204);
 });
 
 app.get("/", (c) => {
@@ -171,14 +167,11 @@ app.post("/attendee", async (c) => {
   const formData = await c.req.parseBody();
   const name = (formData.name as string)?.trim();
   if (!name) {
-    return c.redirect("/");
+    return c.body(null, 400);
   }
   const destination = `/attendees/${encodeURIComponent(name)}`;
-  if (c.req.header("HX-Request")) {
-    c.header("HX-Redirect", destination);
-    return c.body(null, 204);
-  }
-  return c.redirect(destination);
+  c.header("HX-Redirect", destination);
+  return c.body(null, 204);
 });
 
 app.put("/attendees/:name", async (c) => {
@@ -266,23 +259,20 @@ app.post("/cockpit/attendees", async (c) => {
   const formData = await c.req.parseBody();
   const name = (formData.name as string)?.trim();
   if (!name) {
-    if (c.req.header("HX-Request")) {
-      const attendees = getAllAttendees(db);
-      const attendeesWithFlights = attendees.map((attendee) => ({
-        attendee,
-        flights: getFlightsForAttendee(db, attendee.id),
-      }));
-      return c.html(
-        <CockpitAttendeeListSection
-          attendees={attendeesWithFlights}
-          locale={locale}
-          message={t.common.error}
-          messageType="error"
-        />,
-        400
-      );
-    }
-    return c.redirect("/cockpit");
+    const attendees = getAllAttendees(db);
+    const attendeesWithFlights = attendees.map((attendee) => ({
+      attendee,
+      flights: getFlightsForAttendee(db, attendee.id),
+    }));
+    return c.html(
+      <CockpitAttendeeListSection
+        attendees={attendeesWithFlights}
+        locale={locale}
+        message={t.common.error}
+        messageType="error"
+      />,
+      400
+    );
   }
   try {
     // Create new attendee with default values
@@ -294,59 +284,47 @@ app.post("/cockpit/attendees", async (c) => {
       dietary_requirements: null,
     };
     upsertAttendee(db, attendee);
-
-    if (c.req.header("HX-Request")) {
-      const attendees = getAllAttendees(db);
-      const attendeesWithFlights = attendees.map((item) => ({
-        attendee: item,
-        flights: getFlightsForAttendee(db, item.id),
-      }));
-      return c.html(
-        <CockpitAttendeeListSection
-          attendees={attendeesWithFlights}
-          locale={locale}
-        />
-      );
-    }
-
-    return c.redirect(`/attendees/${encodeURIComponent(name)}`);
+    const attendees = getAllAttendees(db);
+    const attendeesWithFlights = attendees.map((item) => ({
+      attendee: item,
+      flights: getFlightsForAttendee(db, item.id),
+    }));
+    return c.html(
+      <CockpitAttendeeListSection
+        attendees={attendeesWithFlights}
+        locale={locale}
+      />
+    );
   } catch (e) {
     console.error(e);
-    if (c.req.header("HX-Request")) {
-      const attendees = getAllAttendees(db);
-      const attendeesWithFlights = attendees.map((attendee) => ({
-        attendee,
-        flights: getFlightsForAttendee(db, attendee.id),
-      }));
-      return c.html(
-        <CockpitAttendeeListSection
-          attendees={attendeesWithFlights}
-          locale={locale}
-          message={t.common.error}
-          messageType="error"
-        />,
-        500
-      );
-    }
-    return c.redirect("/cockpit");
+    const attendees = getAllAttendees(db);
+    const attendeesWithFlights = attendees.map((attendee) => ({
+      attendee,
+      flights: getFlightsForAttendee(db, attendee.id),
+    }));
+    return c.html(
+      <CockpitAttendeeListSection
+        attendees={attendeesWithFlights}
+        locale={locale}
+        message={t.common.error}
+        messageType="error"
+      />,
+      500
+    );
   }
 });
 
 app.post("/cockpit/attendees/:id/flights", async (c) => {
+  const locale = getLocale(c);
+  const t = getTranslations(locale);
   try {
     const attendeeId = Number(c.req.param("id"));
     if (!Number.isFinite(attendeeId)) {
-      return c.redirect("/cockpit");
+      return c.body(null, 400);
     }
     const formData = await c.req.parseBody();
     const flightId = Number(formData.flight_id);
     if (!Number.isFinite(flightId)) {
-      return c.redirect("/cockpit");
-    }
-    addPassengerToFlight(db, flightId, attendeeId);
-
-    if (c.req.header("HX-Request")) {
-      const locale = getLocale(c);
       const attendee = getAttendeeById(db, attendeeId);
       if (!attendee) {
         return c.html("", 404);
@@ -354,43 +332,105 @@ app.post("/cockpit/attendees/:id/flights", async (c) => {
       const flights = getFlightsForAttendee(db, attendeeId);
       const allFlights = getAllFlights(db);
       return c.html(
-        <AttendeeFlightsSection attendee={attendee} flights={flights} allFlights={allFlights} locale={locale} />
+        <AttendeeFlightsSection
+          attendee={attendee}
+          flights={flights}
+          allFlights={allFlights}
+          locale={locale}
+          message={t.common.error}
+          messageType="error"
+        />,
+        400
       );
     }
-
-    return c.redirect("/cockpit");
+    addPassengerToFlight(db, flightId, attendeeId);
+    const attendee = getAttendeeById(db, attendeeId);
+    if (!attendee) {
+      return c.html("", 404);
+    }
+    const flights = getFlightsForAttendee(db, attendeeId);
+    const allFlights = getAllFlights(db);
+    return c.html(
+      <AttendeeFlightsSection
+        attendee={attendee}
+        flights={flights}
+        allFlights={allFlights}
+        locale={locale}
+      />
+    );
   } catch (e) {
     console.error(e);
-    return c.redirect("/cockpit");
+    const attendeeId = Number(c.req.param("id"));
+    if (!Number.isFinite(attendeeId)) {
+      return c.body(null, 500);
+    }
+    const attendee = getAttendeeById(db, attendeeId);
+    if (!attendee) {
+      return c.html("", 404);
+    }
+    const flights = getFlightsForAttendee(db, attendeeId);
+    const allFlights = getAllFlights(db);
+    return c.html(
+      <AttendeeFlightsSection
+        attendee={attendee}
+        flights={flights}
+        allFlights={allFlights}
+        locale={locale}
+        message={t.common.error}
+        messageType="error"
+      />,
+      500
+    );
   }
 });
 
 app.post("/cockpit/attendees/:id/flights/:flightId/remove", async (c) => {
+  const locale = getLocale(c);
+  const t = getTranslations(locale);
   try {
     const attendeeId = Number(c.req.param("id"));
     const flightId = Number(c.req.param("flightId"));
     if (!Number.isFinite(attendeeId) || !Number.isFinite(flightId)) {
-      return c.redirect("/cockpit");
+      return c.body(null, 400);
     }
     removePassengerFromFlight(db, flightId, attendeeId);
-
-    if (c.req.header("HX-Request")) {
-      const locale = getLocale(c);
-      const attendee = getAttendeeById(db, attendeeId);
-      if (!attendee) {
-        return c.html("", 404);
-      }
-      const flights = getFlightsForAttendee(db, attendeeId);
-      const allFlights = getAllFlights(db);
-      return c.html(
-        <AttendeeFlightsSection attendee={attendee} flights={flights} allFlights={allFlights} locale={locale} />
-      );
+    const attendee = getAttendeeById(db, attendeeId);
+    if (!attendee) {
+      return c.html("", 404);
     }
-
-    return c.redirect("/cockpit");
+    const flights = getFlightsForAttendee(db, attendeeId);
+    const allFlights = getAllFlights(db);
+    return c.html(
+      <AttendeeFlightsSection
+        attendee={attendee}
+        flights={flights}
+        allFlights={allFlights}
+        locale={locale}
+      />
+    );
   } catch (e) {
     console.error(e);
-    return c.redirect("/cockpit");
+    const attendeeId = Number(c.req.param("id"));
+    if (!Number.isFinite(attendeeId)) {
+      return c.body(null, 500);
+    }
+    const attendee = getAttendeeById(db, attendeeId);
+    if (!attendee) {
+      return c.html("", 404);
+    }
+    const flights = getFlightsForAttendee(db, attendeeId);
+    const allFlights = getAllFlights(db);
+    return c.html(
+      <AttendeeFlightsSection
+        attendee={attendee}
+        flights={flights}
+        allFlights={allFlights}
+        locale={locale}
+        message={t.common.error}
+        messageType="error"
+      />,
+      500
+    );
   }
 });
 
@@ -450,35 +490,24 @@ app.post("/flights", async (c) => {
     }
 
     if (!flight) {
-      if (c.req.header("HX-Request")) {
-        const flights = getAllFlights(db);
-        return c.html(
-          <FlightManageFlightsSection locale={locale} flights={flights} message={t.common.error} messageType="error" />,
-          400
-        );
-      }
-      return c.redirect("/flights/manage");
-    }
-    upsertFlight(db, flight);
-
-    if (c.req.header("HX-Request")) {
-      const flights = getAllFlights(db);
-      return c.html(
-        <FlightManageFlightsSection locale={locale} flights={flights} />
-      );
-    }
-
-    return c.redirect("/flights/manage");
-  } catch (e) {
-    console.error(e);
-    if (c.req.header("HX-Request")) {
       const flights = getAllFlights(db);
       return c.html(
         <FlightManageFlightsSection locale={locale} flights={flights} message={t.common.error} messageType="error" />,
-        500
+        400
       );
     }
-    return c.redirect("/flights/manage");
+    upsertFlight(db, flight);
+    const flights = getAllFlights(db);
+    return c.html(
+      <FlightManageFlightsSection locale={locale} flights={flights} />
+    );
+  } catch (e) {
+    console.error(e);
+    const flights = getAllFlights(db);
+    return c.html(
+      <FlightManageFlightsSection locale={locale} flights={flights} message={t.common.error} messageType="error" />,
+      500
+    );
   }
 });
 
@@ -488,42 +517,31 @@ app.post("/flights/:id", async (c) => {
   try {
     const id = Number(c.req.param("id"));
     if (!Number.isFinite(id)) {
-      return c.redirect("/flights/manage");
+      return c.body(null, 400);
     }
 
     const formData = await c.req.parseBody();
     const flight = parseFlightFromPayload(formData as Record<string, unknown>);
 
     if (!flight) {
-      if (c.req.header("HX-Request")) {
-        const flights = getAllFlights(db);
-        return c.html(
-          <FlightManageFlightsSection locale={locale} flights={flights} message={t.common.error} messageType="error" />,
-          400
-        );
-      }
-      return c.redirect("/flights/manage");
-    }
-    updateFlightById(db, id, flight);
-
-    if (c.req.header("HX-Request")) {
-      const flights = getAllFlights(db);
-      return c.html(
-        <FlightManageFlightsSection locale={locale} flights={flights} />
-      );
-    }
-
-    return c.redirect("/flights/manage");
-  } catch (e) {
-    console.error(e);
-    if (c.req.header("HX-Request")) {
       const flights = getAllFlights(db);
       return c.html(
         <FlightManageFlightsSection locale={locale} flights={flights} message={t.common.error} messageType="error" />,
-        500
+        400
       );
     }
-    return c.redirect("/flights/manage");
+    updateFlightById(db, id, flight);
+    const flights = getAllFlights(db);
+    return c.html(
+      <FlightManageFlightsSection locale={locale} flights={flights} />
+    );
+  } catch (e) {
+    console.error(e);
+    const flights = getAllFlights(db);
+    return c.html(
+      <FlightManageFlightsSection locale={locale} flights={flights} message={t.common.error} messageType="error" />,
+      500
+    );
   }
 });
 
@@ -533,28 +551,20 @@ app.post("/flights/:id/delete", async (c) => {
   try {
     const id = Number(c.req.param("id"));
     if (!Number.isFinite(id)) {
-      return c.redirect("/flights/manage");
+      return c.body(null, 400);
     }
     deleteFlight(db, id);
-
-    if (c.req.header("HX-Request")) {
-      const flights = getAllFlights(db);
-      return c.html(
-        <FlightManageFlightsSection locale={locale} flights={flights} />
-      );
-    }
-
-    return c.redirect("/flights/manage");
+    const flights = getAllFlights(db);
+    return c.html(
+      <FlightManageFlightsSection locale={locale} flights={flights} />
+    );
   } catch (e) {
     console.error(e);
-    if (c.req.header("HX-Request")) {
-      const flights = getAllFlights(db);
-      return c.html(
-        <FlightManageFlightsSection locale={locale} flights={flights} message={t.common.error} messageType="error" />,
-        500
-      );
-    }
-    return c.redirect("/flights/manage");
+    const flights = getAllFlights(db);
+    return c.html(
+      <FlightManageFlightsSection locale={locale} flights={flights} message={t.common.error} messageType="error" />,
+      500
+    );
   }
 });
 
@@ -603,33 +613,11 @@ app.post("/flights/:id/passengers", async (c) => {
   try {
     const id = Number(c.req.param("id"));
     if (!Number.isFinite(id)) {
-      return c.redirect("/flights/manage");
+      return c.body(null, 400);
     }
     const formData = await c.req.parseBody();
     const attendeeId = Number(formData.attendee_id);
     if (!Number.isFinite(attendeeId)) {
-      if (c.req.header("HX-Request")) {
-        const passengers = getPassengersForFlight(db, id);
-        const flight = getFlightById(db, id);
-        if (!flight) {
-          return c.html("", 404);
-        }
-        return c.html(
-          <FlightPassengersListSection
-            locale={locale}
-            flight={flight}
-            passengers={passengers}
-            message={t.common.error}
-            messageType="error"
-          />,
-          400
-        );
-      }
-      return c.redirect(`/flights/${id}/passengers`);
-    }
-    addPassengerToFlight(db, id, attendeeId);
-
-    if (c.req.header("HX-Request")) {
       const passengers = getPassengersForFlight(db, id);
       const flight = getFlightById(db, id);
       if (!flight) {
@@ -640,33 +628,45 @@ app.post("/flights/:id/passengers", async (c) => {
           locale={locale}
           flight={flight}
           passengers={passengers}
-        />
+          message={t.common.error}
+          messageType="error"
+        />,
+        400
       );
     }
-
-    return c.redirect(`/flights/${id}/passengers`);
+    addPassengerToFlight(db, id, attendeeId);
+    const passengers = getPassengersForFlight(db, id);
+    const flight = getFlightById(db, id);
+    if (!flight) {
+      return c.html("", 404);
+    }
+    return c.html(
+      <FlightPassengersListSection
+        locale={locale}
+        flight={flight}
+        passengers={passengers}
+      />
+    );
   } catch (e) {
     console.error(e);
-    if (c.req.header("HX-Request")) {
-      const id = Number(c.req.param("id"));
-      if (Number.isFinite(id)) {
-        const passengers = getPassengersForFlight(db, id);
-        const flight = getFlightById(db, id);
-        if (flight) {
-          return c.html(
-            <FlightPassengersListSection
-              locale={locale}
-              flight={flight}
-              passengers={passengers}
-              message={t.common.error}
-              messageType="error"
-            />,
-            500
-          );
-        }
+    const id = Number(c.req.param("id"));
+    if (Number.isFinite(id)) {
+      const passengers = getPassengersForFlight(db, id);
+      const flight = getFlightById(db, id);
+      if (flight) {
+        return c.html(
+          <FlightPassengersListSection
+            locale={locale}
+            flight={flight}
+            passengers={passengers}
+            message={t.common.error}
+            messageType="error"
+          />,
+          500
+        );
       }
     }
-    return c.redirect(`/flights/${Number.isFinite(Number(c.req.param("id"))) ? c.req.param("id") : ""}/passengers`);
+    return c.body(null, 500);
   }
 });
 
@@ -677,48 +677,41 @@ app.post("/flights/:id/passengers/:attendeeId/remove", async (c) => {
     const flightId = Number(c.req.param("id"));
     const attendeeId = Number(c.req.param("attendeeId"));
     if (!Number.isFinite(flightId) || !Number.isFinite(attendeeId)) {
-      return c.redirect("/flights/manage");
+      return c.body(null, 400);
     }
     removePassengerFromFlight(db, flightId, attendeeId);
-
-    if (c.req.header("HX-Request")) {
-      const passengers = getPassengersForFlight(db, flightId);
-      const flight = getFlightById(db, flightId);
-      if (!flight) {
-        return c.html("", 404);
-      }
-      return c.html(
-        <FlightPassengersListSection
-          locale={locale}
-          flight={flight}
-          passengers={passengers}
-        />
-      );
+    const passengers = getPassengersForFlight(db, flightId);
+    const flight = getFlightById(db, flightId);
+    if (!flight) {
+      return c.html("", 404);
     }
-
-    return c.redirect(`/flights/${flightId}/passengers`);
+    return c.html(
+      <FlightPassengersListSection
+        locale={locale}
+        flight={flight}
+        passengers={passengers}
+      />
+    );
   } catch (e) {
     console.error(e);
-    if (c.req.header("HX-Request")) {
-      const flightId = Number(c.req.param("id"));
-      if (Number.isFinite(flightId)) {
-        const passengers = getPassengersForFlight(db, flightId);
-        const flight = getFlightById(db, flightId);
-        if (flight) {
-          return c.html(
-            <FlightPassengersListSection
-              locale={locale}
-              flight={flight}
-              passengers={passengers}
-              message={t.common.error}
-              messageType="error"
-            />,
-            500
-          );
-        }
+    const flightId = Number(c.req.param("id"));
+    if (Number.isFinite(flightId)) {
+      const passengers = getPassengersForFlight(db, flightId);
+      const flight = getFlightById(db, flightId);
+      if (flight) {
+        return c.html(
+          <FlightPassengersListSection
+            locale={locale}
+            flight={flight}
+            passengers={passengers}
+            message={t.common.error}
+            messageType="error"
+          />,
+          500
+        );
       }
     }
-    return c.redirect("/flights/manage");
+    return c.body(null, 500);
   }
 });
 

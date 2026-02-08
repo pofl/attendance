@@ -44,8 +44,6 @@ export const FlightManageFlightsSection: FC<{
               <div class="button-row mb-2">
                 <a href={`/flights/${flight.id}/passengers`}><button type="button">{t.managePassengers}</button></a>
                 <form
-                  method="post"
-                  action={`/flights/${flight.id}/delete`}
                   class="inline-form"
                   hx-post={`/flights/${flight.id}/delete`}
                   hx-target="#flight-manage-list"
@@ -56,8 +54,6 @@ export const FlightManageFlightsSection: FC<{
               </div>
 
               <form
-                method="post"
-                action={`/flights/${flight.id}`}
                 class="grid-2"
                 hx-post={`/flights/${flight.id}`}
                 hx-target="#flight-manage-list"
