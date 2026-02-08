@@ -15,7 +15,9 @@ export const FlightManageFlightsSection: FC<{
 
   return (
     <section id="flight-manage-list">
-      <h2>{t.existingFlights} ({flights.length})</h2>
+      <h2>
+        {t.existingFlights} ({flights.length})
+      </h2>
       {message && <p class={messageClass}>{message}</p>}
       {flights.length === 0 ? (
         <p>{t.noFlights}</p>
@@ -27,7 +29,8 @@ export const FlightManageFlightsSection: FC<{
                 {flight.flight_number} · {flight.from_airport} → {flight.to_airport}
               </div>
               <div class="text-muted">
-                {formatLocalDateTime(flight.departure_at, flight.from_utc_offset_minutes)} ({formatOffsetLabel(flight.from_utc_offset_minutes)})
+                {formatLocalDateTime(flight.departure_at, flight.from_utc_offset_minutes)} (
+                {formatOffsetLabel(flight.from_utc_offset_minutes)})
               </div>
             </summary>
             <div class="accordion-content">
@@ -37,19 +40,26 @@ export const FlightManageFlightsSection: FC<{
                   {flight.from_airport} → {flight.to_airport}
                 </div>
                 <div class="text-muted">
-                  {t.departure}: {formatLocalDateTime(flight.departure_at, flight.from_utc_offset_minutes)} ({formatOffsetLabel(flight.from_utc_offset_minutes)}) · {t.arrival}: {formatLocalDateTime(flight.arrival_at, flight.to_utc_offset_minutes)} ({formatOffsetLabel(flight.to_utc_offset_minutes)})
+                  {t.departure}: {formatLocalDateTime(flight.departure_at, flight.from_utc_offset_minutes)} (
+                  {formatOffsetLabel(flight.from_utc_offset_minutes)}) · {t.arrival}:{" "}
+                  {formatLocalDateTime(flight.arrival_at, flight.to_utc_offset_minutes)} (
+                  {formatOffsetLabel(flight.to_utc_offset_minutes)})
                 </div>
               </div>
 
               <div class="button-row mb-2">
-                <a href={`/flights/${flight.id}/passengers`}><button type="button">{t.managePassengers}</button></a>
+                <a href={`/flights/${flight.id}/passengers`}>
+                  <button type="button">{t.managePassengers}</button>
+                </a>
                 <form
                   class="inline-form"
                   hx-post={`/flights/${flight.id}/delete`}
                   hx-target="#flight-manage-list"
                   hx-swap="outerHTML"
                 >
-                  <button type="submit" class="button-secondary">{t.delete}</button>
+                  <button type="submit" class="button-secondary">
+                    {t.delete}
+                  </button>
                 </form>
               </div>
 
@@ -69,11 +79,21 @@ export const FlightManageFlightsSection: FC<{
                 </label>
                 <label>
                   {flightLabels.fromOffset}:
-                  <input type="number" name="from_utc_offset_minutes" required value={String(flight.from_utc_offset_minutes)} />
+                  <input
+                    type="number"
+                    name="from_utc_offset_minutes"
+                    required
+                    value={String(flight.from_utc_offset_minutes)}
+                  />
                 </label>
                 <label>
                   {flightLabels.departureLocal}:
-                  <input type="datetime-local" name="departure_local" required value={formatDateForInput(flight.departure_at, flight.from_utc_offset_minutes)} />
+                  <input
+                    type="datetime-local"
+                    name="departure_local"
+                    required
+                    value={formatDateForInput(flight.departure_at, flight.from_utc_offset_minutes)}
+                  />
                 </label>
                 <label>
                   {flightLabels.toAirport}:
@@ -81,11 +101,21 @@ export const FlightManageFlightsSection: FC<{
                 </label>
                 <label>
                   {flightLabels.toOffset}:
-                  <input type="number" name="to_utc_offset_minutes" required value={String(flight.to_utc_offset_minutes)} />
+                  <input
+                    type="number"
+                    name="to_utc_offset_minutes"
+                    required
+                    value={String(flight.to_utc_offset_minutes)}
+                  />
                 </label>
                 <label>
                   {flightLabels.arrivalLocal}:
-                  <input type="datetime-local" name="arrival_local" required value={formatDateForInput(flight.arrival_at, flight.to_utc_offset_minutes)} />
+                  <input
+                    type="datetime-local"
+                    name="arrival_local"
+                    required
+                    value={formatDateForInput(flight.arrival_at, flight.to_utc_offset_minutes)}
+                  />
                 </label>
                 <div>
                   <button type="submit">{t.save}</button>

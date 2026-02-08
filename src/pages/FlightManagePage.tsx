@@ -44,7 +44,12 @@ export const FlightManagePage: FC<{ locale: Locale; flights: FlightRecord[] }> =
               </label>
               <label>
                 {flightLabels.fromOffset}:
-                <input type="number" name="from_utc_offset_minutes" placeholder="60" x-bind:disabled="mode !== 'fields'" />
+                <input
+                  type="number"
+                  name="from_utc_offset_minutes"
+                  placeholder="60"
+                  x-bind:disabled="mode !== 'fields'"
+                />
               </label>
               <label>
                 {flightLabels.departureLocal}:
@@ -56,7 +61,12 @@ export const FlightManagePage: FC<{ locale: Locale; flights: FlightRecord[] }> =
               </label>
               <label>
                 {flightLabels.toOffset}:
-                <input type="number" name="to_utc_offset_minutes" placeholder="330" x-bind:disabled="mode !== 'fields'" />
+                <input
+                  type="number"
+                  name="to_utc_offset_minutes"
+                  placeholder="330"
+                  x-bind:disabled="mode !== 'fields'"
+                />
               </label>
               <label>
                 {flightLabels.arrivalLocal}:

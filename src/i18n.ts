@@ -206,7 +206,8 @@ const en_US: Translations = {
     fieldEntryToggle: "Enter fields",
     jsonToggle: "Paste JSON",
     importJsonTitle: "Import JSON",
-    importJsonHelp: "Paste a JSON object with flight fields. Include timezone offsets in the date strings. If provided, it overrides the individual fields above.",
+    importJsonHelp:
+      "Paste a JSON object with flight fields. Include timezone offsets in the date strings. If provided, it overrides the individual fields above.",
     importJsonPlaceholder: FLIGHT_JSON_PLACEHOLDER,
     existingFlights: "Existing Flights",
     noFlights: "No flights found.",
@@ -324,7 +325,8 @@ const de_DE: Translations = {
     fieldEntryToggle: "Felder eingeben",
     jsonToggle: "JSON einfügen",
     importJsonTitle: "JSON importieren",
-    importJsonHelp: "JSON-Objekt mit Flugdaten einfügen. Zeitzonen-Offsets in den Datumsstrings angeben. Wenn vorhanden, überschreibt es die Felder oben.",
+    importJsonHelp:
+      "JSON-Objekt mit Flugdaten einfügen. Zeitzonen-Offsets in den Datumsstrings angeben. Wenn vorhanden, überschreibt es die Felder oben.",
     importJsonPlaceholder: FLIGHT_JSON_PLACEHOLDER,
     existingFlights: "Vorhandene Flüge",
     noFlights: "Keine Flüge gefunden.",

@@ -17,11 +17,7 @@ export const CockpitPage: FC<{ attendees: AttendeeWithFlights[]; locale: Locale 
 
       <section class="card mb-3">
         <h2>{t.cockpitPage.createNew}</h2>
-        <form
-          hx-post="/cockpit/attendees"
-          hx-target="#cockpit-attendees"
-          hx-swap="outerHTML"
-        >
+        <form hx-post="/cockpit/attendees" hx-target="#cockpit-attendees" hx-swap="outerHTML">
           <label>
             {t.cockpitPage.name}:
             <input type="text" name="name" required placeholder={t.cockpitPage.namePlaceholder} />

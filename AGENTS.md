@@ -64,8 +64,8 @@ server. Nested CSS is used. Ignore Progressive Enhancement.
 
 ### UI/Pages
 
-- src/pages/*.tsx: Layout + Index, Attendee, Cockpit pages.
-- src/components/*.tsx: AttendeeForm, LanguageToggle.
+- src/pages/\*.tsx: Layout + Index, Attendee, Cockpit pages.
+- src/components/\*.tsx: AttendeeForm, LanguageToggle.
 - src/i18n.ts: translations and locale helpers.
 - public/styles.css: global styling served at /static.
 

@@ -5,13 +5,13 @@ export const LanguageToggle: FC<{ locale: Locale; currentPath: string }> = ({ lo
   return (
     <form class="language-toggle" hx-post="/set-locale">
       <input type="hidden" name="redirect" value={currentPath} />
-      <select
-        name="locale"
-        class="language-select"
-        onchange="this.form.submit()"
-      >
-        <option value="en_US" selected={locale === "en_US"}>🇺🇸 English</option>
-        <option value="de_DE" selected={locale === "de_DE"}>🇩🇪 Deutsch</option>
+      <select name="locale" class="language-select" onchange="this.form.submit()">
+        <option value="en_US" selected={locale === "en_US"}>
+          🇺🇸 English
+        </option>
+        <option value="de_DE" selected={locale === "de_DE"}>
+          🇩🇪 Deutsch
+        </option>
       </select>
     </form>
   );

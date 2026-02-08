@@ -17,15 +17,29 @@ const AttendeeAccordion: FC<{
 
   return (
     <details key={attendee.id} class="accordion">
-      <summary class="accordion-header"><div class="grow">{attendee.name}</div> <a href={`/attendees/${encodeURIComponent(attendee.name)}`}><button>Open</button></a></summary>
+      <summary class="accordion-header">
+        <div class="grow">{attendee.name}</div>{" "}
+        <a href={`/attendees/${encodeURIComponent(attendee.name)}`}>
+          <button>Open</button>
+        </a>
+      </summary>
       <div class="accordion-content">
         <section>
           <h3>{t.attendeeForm.editTitle}</h3>
           <ul>
-            <li><strong>{t.attendeeForm.locale}:</strong> {attendee.locale}</li>
-            <li><strong>{t.attendeeForm.passportStatus}:</strong> {t.attendeeForm.passportOptions[attendee.passport_status]}</li>
-            <li><strong>{t.attendeeForm.visaStatus}:</strong> {t.attendeeForm.visaOptions[attendee.visa_status]}</li>
-            <li><strong>{t.attendeeForm.dietaryRequirements}:</strong> {attendee.dietary_requirements ?? "-"}</li>
+            <li>
+              <strong>{t.attendeeForm.locale}:</strong> {attendee.locale}
+            </li>
+            <li>
+              <strong>{t.attendeeForm.passportStatus}:</strong>{" "}
+              {t.attendeeForm.passportOptions[attendee.passport_status]}
+            </li>
+            <li>
+              <strong>{t.attendeeForm.visaStatus}:</strong> {t.attendeeForm.visaOptions[attendee.visa_status]}
+            </li>
+            <li>
+              <strong>{t.attendeeForm.dietaryRequirements}:</strong> {attendee.dietary_requirements ?? "-"}
+            </li>
           </ul>
         </section>
         <section class="mt-2">
@@ -46,12 +60,16 @@ const AttendeeAccordion: FC<{
                 {flights.map((flight) => (
                   <tr key={flight.id}>
                     <td>{flight.flight_number}</td>
-                    <td>{flight.from_airport} → {flight.to_airport}</td>
                     <td>
-                      {formatLocalDateTime(flight.departure_at, flight.from_utc_offset_minutes)} ({formatOffsetLabel(flight.from_utc_offset_minutes)})
+                      {flight.from_airport} → {flight.to_airport}
                     </td>
                     <td>
-                      {formatLocalDateTime(flight.arrival_at, flight.to_utc_offset_minutes)} ({formatOffsetLabel(flight.to_utc_offset_minutes)})
+                      {formatLocalDateTime(flight.departure_at, flight.from_utc_offset_minutes)} (
+                      {formatOffsetLabel(flight.from_utc_offset_minutes)})
+                    </td>
+                    <td>
+                      {formatLocalDateTime(flight.arrival_at, flight.to_utc_offset_minutes)} (
+                      {formatOffsetLabel(flight.to_utc_offset_minutes)})
                     </td>
                   </tr>
                 ))}
@@ -75,7 +93,9 @@ export const CockpitAttendeeListSection: FC<{
 
   return (
     <section id="cockpit-attendees" class="mt-2">
-      <h2>{t.cockpitPage.existingAttendees} ({attendees.length})</h2>
+      <h2>
+        {t.cockpitPage.existingAttendees} ({attendees.length})
+      </h2>
       {message && <p class={messageClass}>{message}</p>}
       {attendees.length === 0 ? (
         <p>{t.cockpitPage.noAttendees}</p>

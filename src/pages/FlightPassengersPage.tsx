@@ -22,23 +22,24 @@ export const FlightPassengersPage: FC<{
           <strong>{flight.flight_number}</strong> · {flight.from_airport} → {flight.to_airport}
         </p>
         <p class="text-muted">
-          {t.departure}: {formatLocalDateTime(flight.departure_at, flight.from_utc_offset_minutes)} ({formatOffsetLabel(flight.from_utc_offset_minutes)}) · {t.arrival}: {formatLocalDateTime(flight.arrival_at, flight.to_utc_offset_minutes)} ({formatOffsetLabel(flight.to_utc_offset_minutes)})
+          {t.departure}: {formatLocalDateTime(flight.departure_at, flight.from_utc_offset_minutes)} (
+          {formatOffsetLabel(flight.from_utc_offset_minutes)}) · {t.arrival}:{" "}
+          {formatLocalDateTime(flight.arrival_at, flight.to_utc_offset_minutes)} (
+          {formatOffsetLabel(flight.to_utc_offset_minutes)})
         </p>
       </section>
 
       <section class="card mb-3">
         <h2>{t.addPassengerTitle}</h2>
-        <form
-          hx-post={`/flights/${flight.id}/passengers`}
-          hx-target="#flight-passengers"
-          hx-swap="outerHTML"
-        >
+        <form hx-post={`/flights/${flight.id}/passengers`} hx-target="#flight-passengers" hx-swap="outerHTML">
           <label>
             {t.selectAttendee}:
             <select name="attendee_id" required>
               <option value="">{t.selectPlaceholder}</option>
               {attendees.map((attendee) => (
-                <option value={attendee.id} key={attendee.id}>{attendee.name}</option>
+                <option value={attendee.id} key={attendee.id}>
+                  {attendee.name}
+                </option>
               ))}
             </select>
           </label>

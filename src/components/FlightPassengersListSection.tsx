@@ -15,7 +15,9 @@ export const FlightPassengersListSection: FC<{
 
   return (
     <section id="flight-passengers">
-      <h2>{t.currentPassengers} ({passengers.length})</h2>
+      <h2>
+        {t.currentPassengers} ({passengers.length})
+      </h2>
       {message && <p class={messageClass}>{message}</p>}
       {passengers.length === 0 ? (
         <p>{t.noPassengers}</p>
@@ -40,7 +42,9 @@ export const FlightPassengersListSection: FC<{
                     hx-target="#flight-passengers"
                     hx-swap="outerHTML"
                   >
-                    <button type="submit" class="button-secondary">{flightLabels.remove}</button>
+                    <button type="submit" class="button-secondary">
+                      {flightLabels.remove}
+                    </button>
                   </form>
                 </td>
               </tr>

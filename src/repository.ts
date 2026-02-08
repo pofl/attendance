@@ -182,9 +182,10 @@ export function upsertFlight(db: Database, flight: Flight): FlightRecord {
 
 export function getAllFlights(db: Database): FlightRecord[] {
   try {
-    const rows = db
-      .prepare("SELECT * FROM flights ORDER BY datetime(departure_at) ASC")
-      .all() as Record<string, unknown>[];
+    const rows = db.prepare("SELECT * FROM flights ORDER BY datetime(departure_at) ASC").all() as Record<
+      string,
+      unknown
+    >[];
     return rows.map((row) => parseFlightRecord(row));
   } catch (error) {
     console.error("Error getting all flights:", error);
@@ -237,9 +238,10 @@ export function deleteFlight(db: Database, id: number): void {
 export function upsertFlightForAttendee(db: Database, attendeeId: number, flight: Flight): FlightRecord {
   try {
     const flightRecord = upsertFlight(db, flight);
-    db.prepare(
-      "INSERT OR IGNORE INTO flight_passengers (flight_id, attendee_id) VALUES (?, ?)"
-    ).run(flightRecord.id, attendeeId);
+    db.prepare("INSERT OR IGNORE INTO flight_passengers (flight_id, attendee_id) VALUES (?, ?)").run(
+      flightRecord.id,
+      attendeeId
+    );
     return flightRecord;
   } catch (error) {
     console.error("Error assigning flight to attendee:", error);
@@ -249,9 +251,10 @@ export function upsertFlightForAttendee(db: Database, attendeeId: number, flight
 
 export function addPassengerToFlight(db: Database, flightId: number, attendeeId: number): void {
   try {
-    db.prepare(
-      "INSERT OR IGNORE INTO flight_passengers (flight_id, attendee_id) VALUES (?, ?)"
-    ).run(flightId, attendeeId);
+    db.prepare("INSERT OR IGNORE INTO flight_passengers (flight_id, attendee_id) VALUES (?, ?)").run(
+      flightId,
+      attendeeId
+    );
   } catch (error) {
     console.error("Error adding passenger to flight:", error);
     throw error;
@@ -300,10 +303,7 @@ export function getFlightsForAttendee(db: Database, attendeeId: number): FlightR
 
 export function removePassengerFromFlight(db: Database, flightId: number, attendeeId: number): void {
   try {
-    db.prepare("DELETE FROM flight_passengers WHERE flight_id = ? AND attendee_id = ?").run(
-      flightId,
-      attendeeId
-    );
+    db.prepare("DELETE FROM flight_passengers WHERE flight_id = ? AND attendee_id = ?").run(flightId, attendeeId);
   } catch (error) {
     console.error("Error removing passenger from flight:", error);
     throw error;

@@ -37,12 +37,16 @@ export const AttendeeFlightsSection: FC<{
             {flights.map((flight) => (
               <tr key={flight.id}>
                 <td>{flight.flight_number}</td>
-                <td>{flight.from_airport} → {flight.to_airport}</td>
                 <td>
-                  {formatLocalDateTime(flight.departure_at, flight.from_utc_offset_minutes)} ({formatOffsetLabel(flight.from_utc_offset_minutes)})
+                  {flight.from_airport} → {flight.to_airport}
                 </td>
                 <td>
-                  {formatLocalDateTime(flight.arrival_at, flight.to_utc_offset_minutes)} ({formatOffsetLabel(flight.to_utc_offset_minutes)})
+                  {formatLocalDateTime(flight.departure_at, flight.from_utc_offset_minutes)} (
+                  {formatOffsetLabel(flight.from_utc_offset_minutes)})
+                </td>
+                <td>
+                  {formatLocalDateTime(flight.arrival_at, flight.to_utc_offset_minutes)} (
+                  {formatOffsetLabel(flight.to_utc_offset_minutes)})
                 </td>
                 <td>
                   <form
@@ -51,7 +55,9 @@ export const AttendeeFlightsSection: FC<{
                     hx-target={`#attendee-flights-${attendee.id}`}
                     hx-swap="outerHTML"
                   >
-                    <button type="submit" class="button-secondary">{t.cockpitPage.flightsRemove}</button>
+                    <button type="submit" class="button-secondary">
+                      {t.cockpitPage.flightsRemove}
+                    </button>
                   </form>
                 </td>
               </tr>
@@ -76,7 +82,9 @@ export const AttendeeFlightsSection: FC<{
                 <option value="">{t.cockpitPage.flightsSelectPlaceholder}</option>
                 {availableFlights.map((flight) => (
                   <option value={flight.id} key={flight.id}>
-                    {flight.flight_number} · {flight.from_airport} → {flight.to_airport} · {formatLocalDateTime(flight.departure_at, flight.from_utc_offset_minutes)} ({formatOffsetLabel(flight.from_utc_offset_minutes)})
+                    {flight.flight_number} · {flight.from_airport} → {flight.to_airport} ·{" "}
+                    {formatLocalDateTime(flight.departure_at, flight.from_utc_offset_minutes)} (
+                    {formatOffsetLabel(flight.from_utc_offset_minutes)})
                   </option>
                 ))}
               </select>

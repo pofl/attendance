@@ -9,8 +9,12 @@ export const AttendeeForm: FC<{ attendee: AttendeeRecord; locale?: string }> = (
       <label>
         {t.locale}:
         <select name="locale">
-          <option value="en_US" selected={attendee.locale === "en_US"}>English (US)</option>
-          <option value="de_DE" selected={attendee.locale === "de_DE"}>Deutsch</option>
+          <option value="en_US" selected={attendee.locale === "en_US"}>
+            English (US)
+          </option>
+          <option value="de_DE" selected={attendee.locale === "de_DE"}>
+            Deutsch
+          </option>
         </select>
       </label>
 
@@ -45,8 +49,7 @@ export const AttendeeForm: FC<{ attendee: AttendeeRecord; locale?: string }> = (
       </label>
 
       <label>
-        {t.dietaryRequirements}:
-        <textarea name="dietary_requirements">{attendee.dietary_requirements ?? ""}</textarea>
+        {t.dietaryRequirements}:<textarea name="dietary_requirements">{attendee.dietary_requirements ?? ""}</textarea>
       </label>
 
       <button type="submit">{t.save}</button>

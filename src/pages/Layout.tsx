@@ -27,14 +27,20 @@ export const Layout: FC<LayoutProps> = (props) => {
         <link rel="stylesheet" href="/static/styles.css"></link>
       </head>
       <body>
-        {showToggle && props.currentPath && (
-          <LanguageToggle locale={locale} currentPath={props.currentPath} />
-        )}
+        {showToggle && props.currentPath && <LanguageToggle locale={locale} currentPath={props.currentPath} />}
         <nav class="nav">
-          <a href="/" class={isActive("/") ? "active" : ""}>{t.common.nav.home}</a>
-          <a href="/cockpit" class={isActive("/cockpit") ? "active" : ""}>{t.common.nav.cockpit}</a>
-          <a href="/flights" class={isActive("/flights") ? "active" : ""}>{t.common.nav.flightsOverview}</a>
-          <a href="/flights/manage" class={isActive("/flights/manage") ? "active" : ""}>{t.common.nav.flightsManage}</a>
+          <a href="/" class={isActive("/") ? "active" : ""}>
+            {t.common.nav.home}
+          </a>
+          <a href="/cockpit" class={isActive("/cockpit") ? "active" : ""}>
+            {t.common.nav.cockpit}
+          </a>
+          <a href="/flights" class={isActive("/flights") ? "active" : ""}>
+            {t.common.nav.flightsOverview}
+          </a>
+          <a href="/flights/manage" class={isActive("/flights/manage") ? "active" : ""}>
+            {t.common.nav.flightsManage}
+          </a>
         </nav>
         {props.children}
       </body>

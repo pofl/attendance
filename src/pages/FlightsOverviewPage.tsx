@@ -31,10 +31,12 @@ export const FlightsOverviewPage: FC<{ locale: Locale; flights: FlightAggregate[
                   {flight.from_airport} → {flight.to_airport}
                 </td>
                 <td>
-                  {formatLocalDateTime(flight.departure_at, flight.from_utc_offset_minutes)} ({formatOffsetLabel(flight.from_utc_offset_minutes)})
+                  {formatLocalDateTime(flight.departure_at, flight.from_utc_offset_minutes)} (
+                  {formatOffsetLabel(flight.from_utc_offset_minutes)})
                 </td>
                 <td>
-                  {formatLocalDateTime(flight.arrival_at, flight.to_utc_offset_minutes)} ({formatOffsetLabel(flight.to_utc_offset_minutes)})
+                  {formatLocalDateTime(flight.arrival_at, flight.to_utc_offset_minutes)} (
+                  {formatOffsetLabel(flight.to_utc_offset_minutes)})
                 </td>
                 <td>
                   <div>{flight.passenger_count}</div>

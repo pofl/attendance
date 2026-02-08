@@ -79,13 +79,8 @@ const toUtcIsoStringWithOffset = (value: unknown, offsetMinutes: number | null):
   const match = raw.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/);
   if (!match) return null;
   const [, year, month, day, hour, minute] = match;
-  const utcMs = Date.UTC(
-    Number(year),
-    Number(month) - 1,
-    Number(day),
-    Number(hour),
-    Number(minute)
-  ) - offsetMinutes * 60_000;
+  const utcMs =
+    Date.UTC(Number(year), Number(month) - 1, Number(day), Number(hour), Number(minute)) - offsetMinutes * 60_000;
   const date = new Date(utcMs);
   if (Number.isNaN(date.getTime())) return null;
   return date.toISOString();
@@ -108,13 +103,9 @@ const parseFlightFromPayload = (payload: Record<string, unknown>): Flight | null
   const fromAirport = (payload.from_airport as string | undefined)?.trim();
   const toAirport = (payload.to_airport as string | undefined)?.trim();
   const fromOffset =
-    parseOffsetMinutes(payload.from_utc_offset_minutes) ??
-    parseOffsetMinutesFromIso(payload.departure_local) ??
-    null;
+    parseOffsetMinutes(payload.from_utc_offset_minutes) ?? parseOffsetMinutesFromIso(payload.departure_local) ?? null;
   const toOffset =
-    parseOffsetMinutes(payload.to_utc_offset_minutes) ??
-    parseOffsetMinutesFromIso(payload.arrival_local) ??
-    null;
+    parseOffsetMinutes(payload.to_utc_offset_minutes) ?? parseOffsetMinutesFromIso(payload.arrival_local) ?? null;
 
   const departureAtDirect = toUtcIsoString(payload.departure_at);
   const arrivalAtDirect = toUtcIsoString(payload.arrival_at);
@@ -127,7 +118,15 @@ const parseFlightFromPayload = (payload: Record<string, unknown>): Flight | null
     toUtcIsoString(payload.arrival_local) ??
     toUtcIsoStringWithOffset(payload.arrival_local, toOffset);
 
-  if (!flightNumber || !fromAirport || !toAirport || fromOffset === null || toOffset === null || !departureAt || !arrivalAt) {
+  if (
+    !flightNumber ||
+    !fromAirport ||
+    !toAirport ||
+    fromOffset === null ||
+    toOffset === null ||
+    !departureAt ||
+    !arrivalAt
+  ) {
     return null;
   }
 
@@ -233,7 +232,9 @@ app.get("/attendees/:name", zValidator("param", nameParamSchema), async (c) => {
       return c.html(
         <Layout locale={locale} currentPath={`/attendees/${encodeURIComponent(name)}`}>
           <h1>{t.attendeePage.notFoundTitle}</h1>
-          <p class="error">{t.attendeePage.notFoundMessage}: {name}</p>
+          <p class="error">
+            {t.attendeePage.notFoundMessage}: {name}
+          </p>
         </Layout>,
         404
       );
@@ -309,12 +310,7 @@ app.post("/cockpit/attendees", async (c) => {
       attendee: item,
       flights: getFlightsForAttendee(db, item.id),
     }));
-    return c.html(
-      <CockpitAttendeeListSection
-        attendees={attendeesWithFlights}
-        locale={locale}
-      />
-    );
+    return c.html(<CockpitAttendeeListSection attendees={attendeesWithFlights} locale={locale} />);
   } catch (e) {
     console.error(e);
     const attendees = getAllAttendees(db);
@@ -368,12 +364,7 @@ app.post("/cockpit/attendees/:id/flights", zValidator("param", idParamSchema), a
     const flights = getFlightsForAttendee(db, attendeeId);
     const allFlights = getAllFlights(db);
     return c.html(
-      <AttendeeFlightsSection
-        attendee={attendee}
-        flights={flights}
-        allFlights={allFlights}
-        locale={locale}
-      />
+      <AttendeeFlightsSection attendee={attendee} flights={flights} allFlights={allFlights} locale={locale} />
     );
   } catch (e) {
     console.error(e);
@@ -401,10 +392,7 @@ app.post("/cockpit/attendees/:id/flights", zValidator("param", idParamSchema), a
   }
 });
 
-app.post(
-  "/cockpit/attendees/:id/flights/:flightId/remove",
-  zValidator("param", flightIdParamSchema),
-  async (c) => {
+app.post("/cockpit/attendees/:id/flights/:flightId/remove", zValidator("param", flightIdParamSchema), async (c) => {
   const locale = getLocale(c);
   const t = getTranslations(locale);
   try {
@@ -417,12 +405,7 @@ app.post(
     const flights = getFlightsForAttendee(db, attendeeId);
     const allFlights = getAllFlights(db);
     return c.html(
-      <AttendeeFlightsSection
-        attendee={attendee}
-        flights={flights}
-        allFlights={allFlights}
-        locale={locale}
-      />
+      <AttendeeFlightsSection attendee={attendee} flights={flights} allFlights={allFlights} locale={locale} />
     );
   } catch (e) {
     console.error(e);
@@ -448,7 +431,7 @@ app.post(
       500
     );
   }
-);
+});
 
 app.get("/flights", async (c) => {
   const locale = getLocale(c);
@@ -514,9 +497,7 @@ app.post("/flights", async (c) => {
     }
     upsertFlight(db, flight);
     const flights = getAllFlights(db);
-    return c.html(
-      <FlightManageFlightsSection locale={locale} flights={flights} />
-    );
+    return c.html(<FlightManageFlightsSection locale={locale} flights={flights} />);
   } catch (e) {
     console.error(e);
     const flights = getAllFlights(db);
@@ -545,9 +526,7 @@ app.post("/flights/:id", zValidator("param", idParamSchema), async (c) => {
     }
     updateFlightById(db, id, flight);
     const flights = getAllFlights(db);
-    return c.html(
-      <FlightManageFlightsSection locale={locale} flights={flights} />
-    );
+    return c.html(<FlightManageFlightsSection locale={locale} flights={flights} />);
   } catch (e) {
     console.error(e);
     const flights = getAllFlights(db);
@@ -565,9 +544,7 @@ app.post("/flights/:id/delete", zValidator("param", idParamSchema), async (c) =>
     const { id } = c.req.valid("param");
     deleteFlight(db, id);
     const flights = getAllFlights(db);
-    return c.html(
-      <FlightManageFlightsSection locale={locale} flights={flights} />
-    );
+    return c.html(<FlightManageFlightsSection locale={locale} flights={flights} />);
   } catch (e) {
     console.error(e);
     const flights = getAllFlights(db);
@@ -577,7 +554,6 @@ app.post("/flights/:id/delete", zValidator("param", idParamSchema), async (c) =>
     );
   }
 });
-
 
 app.get("/flights/:id/passengers", zValidator("param", idParamSchema), async (c) => {
   const locale = getLocale(c);
@@ -596,12 +572,7 @@ app.get("/flights/:id/passengers", zValidator("param", idParamSchema), async (c)
     const attendees = getAllAttendees(db);
     const passengers = getPassengersForFlight(db, id);
     return c.html(
-      <FlightPassengersPage
-        locale={locale}
-        flight={flight}
-        attendees={attendees}
-        passengers={passengers}
-      />
+      <FlightPassengersPage locale={locale} flight={flight} attendees={attendees} passengers={passengers} />
     );
   } catch (e) {
     console.error(e);
@@ -644,13 +615,7 @@ app.post("/flights/:id/passengers", zValidator("param", idParamSchema), async (c
     if (!flight) {
       return c.html("", 404);
     }
-    return c.html(
-      <FlightPassengersListSection
-        locale={locale}
-        flight={flight}
-        passengers={passengers}
-      />
-    );
+    return c.html(<FlightPassengersListSection locale={locale} flight={flight} passengers={passengers} />);
   } catch (e) {
     console.error(e);
     const id = Number(c.req.param("id"));
@@ -674,10 +639,7 @@ app.post("/flights/:id/passengers", zValidator("param", idParamSchema), async (c
   }
 });
 
-app.post(
-  "/flights/:id/passengers/:attendeeId/remove",
-  zValidator("param", attendeeFlightParamSchema),
-  async (c) => {
+app.post("/flights/:id/passengers/:attendeeId/remove", zValidator("param", attendeeFlightParamSchema), async (c) => {
   const locale = getLocale(c);
   const t = getTranslations(locale);
   try {
@@ -688,13 +650,7 @@ app.post(
     if (!flight) {
       return c.html("", 404);
     }
-    return c.html(
-      <FlightPassengersListSection
-        locale={locale}
-        flight={flight}
-        passengers={passengers}
-      />
-    );
+    return c.html(<FlightPassengersListSection locale={locale} flight={flight} passengers={passengers} />);
   } catch (e) {
     console.error(e);
     const flightId = Number(c.req.param("id"));
@@ -716,7 +672,7 @@ app.post(
     }
     return c.body(null, 500);
   }
-);
+});
 
 serve(
   {
