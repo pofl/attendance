@@ -1,7 +1,7 @@
 import type { FC } from "hono/jsx";
 import { getTranslations, type Locale } from "../i18n.js";
 import type { FlightRecord } from "../repository.js";
-import { formatDateForInput, formatLocalDateTime, formatOffsetLabel } from "../utils/flightFormat.js";
+import { formatArrivalDateTime, formatDateForInput, formatDepartureDateTime } from "../utils/flightFormat.js";
 
 export const FlightManageFlightsSection: FC<{
   locale: Locale;
@@ -29,8 +29,7 @@ export const FlightManageFlightsSection: FC<{
                 {flight.flight_number} · {flight.from_airport} → {flight.to_airport}
               </div>
               <div class="text-muted">
-                {formatLocalDateTime(flight.departure_at, flight.from_utc_offset_minutes)} (
-                {formatOffsetLabel(flight.from_utc_offset_minutes)})
+                {formatDepartureDateTime(flight.departure_at, flight.from_utc_offset_minutes)}
               </div>
             </summary>
             <div class="accordion-content">
@@ -40,10 +39,8 @@ export const FlightManageFlightsSection: FC<{
                   {flight.from_airport} → {flight.to_airport}
                 </div>
                 <div class="text-muted">
-                  {t.departure}: {formatLocalDateTime(flight.departure_at, flight.from_utc_offset_minutes)} (
-                  {formatOffsetLabel(flight.from_utc_offset_minutes)}) · {t.arrival}:{" "}
-                  {formatLocalDateTime(flight.arrival_at, flight.to_utc_offset_minutes)} (
-                  {formatOffsetLabel(flight.to_utc_offset_minutes)})
+                  {formatDepartureDateTime(flight.departure_at, flight.from_utc_offset_minutes)} ·{" "}
+                  {formatArrivalDateTime(flight.arrival_at, flight.to_utc_offset_minutes)}
                 </div>
               </div>
 

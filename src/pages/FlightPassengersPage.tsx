@@ -2,7 +2,7 @@ import type { FC } from "hono/jsx";
 import { FlightPassengersListSection } from "../components/FlightPassengersListSection.js";
 import { getTranslations, type Locale } from "../i18n.js";
 import type { AttendeeRecord, FlightRecord } from "../repository.js";
-import { formatLocalDateTime, formatOffsetLabel } from "../utils/flightFormat.js";
+import { formatArrivalDateTime, formatDepartureDateTime } from "../utils/flightFormat.js";
 import { Layout } from "./Layout.js";
 
 export const FlightPassengersPage: FC<{
@@ -22,10 +22,8 @@ export const FlightPassengersPage: FC<{
           <strong>{flight.flight_number}</strong> · {flight.from_airport} → {flight.to_airport}
         </p>
         <p class="text-muted">
-          {t.departure}: {formatLocalDateTime(flight.departure_at, flight.from_utc_offset_minutes)} (
-          {formatOffsetLabel(flight.from_utc_offset_minutes)}) · {t.arrival}:{" "}
-          {formatLocalDateTime(flight.arrival_at, flight.to_utc_offset_minutes)} (
-          {formatOffsetLabel(flight.to_utc_offset_minutes)})
+          {formatDepartureDateTime(flight.departure_at, flight.from_utc_offset_minutes)} ·{" "}
+          {formatArrivalDateTime(flight.arrival_at, flight.to_utc_offset_minutes)}
         </p>
       </section>
 

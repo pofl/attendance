@@ -88,14 +88,10 @@ export interface Translations {
     delete: string;
     save: string;
     details: string;
-    departure: string;
-    arrival: string;
   };
   flightPassengersPage: {
     title: string;
     flightDetails: string;
-    departure: string;
-    arrival: string;
     addPassengerTitle: string;
     selectAttendee: string;
     selectPlaceholder: string;
@@ -215,14 +211,10 @@ const en_US: Translations = {
     delete: "Delete",
     save: "Save changes",
     details: "Details",
-    departure: "Departure (local)",
-    arrival: "Arrival (local)",
   },
   flightPassengersPage: {
     title: "Manage Flight Passengers",
     flightDetails: "Flight details",
-    departure: "Departure (local)",
-    arrival: "Arrival (local)",
     addPassengerTitle: "Add passenger",
     selectAttendee: "Attendee",
     selectPlaceholder: "Select attendee",
@@ -334,14 +326,10 @@ const de_DE: Translations = {
     delete: "Löschen",
     save: "Änderungen speichern",
     details: "Details",
-    departure: "Abflug (lokal)",
-    arrival: "Ankunft (lokal)",
   },
   flightPassengersPage: {
     title: "Flugpassagiere verwalten",
     flightDetails: "Flugdetails",
-    departure: "Abflug (lokal)",
-    arrival: "Ankunft (lokal)",
     addPassengerTitle: "Passagier hinzufügen",
     selectAttendee: "Teilnehmer",
     selectPlaceholder: "Teilnehmer auswählen",

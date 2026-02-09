@@ -1,7 +1,7 @@
 import type { FC } from "hono/jsx";
 import { getTranslations, type Locale } from "../i18n.js";
 import type { FlightAggregate } from "../repository.js";
-import { formatLocalDateTime, formatOffsetLabel } from "../utils/flightFormat.js";
+import { formatArrivalDateTime, formatDepartureDateTime } from "../utils/flightFormat.js";
 import { Layout } from "./Layout.js";
 
 export const FlightsOverviewPage: FC<{ locale: Locale; flights: FlightAggregate[] }> = ({ locale, flights }) => {
@@ -30,14 +30,8 @@ export const FlightsOverviewPage: FC<{ locale: Locale; flights: FlightAggregate[
                 <td>
                   {flight.from_airport} → {flight.to_airport}
                 </td>
-                <td>
-                  {formatLocalDateTime(flight.departure_at, flight.from_utc_offset_minutes)} (
-                  {formatOffsetLabel(flight.from_utc_offset_minutes)})
-                </td>
-                <td>
-                  {formatLocalDateTime(flight.arrival_at, flight.to_utc_offset_minutes)} (
-                  {formatOffsetLabel(flight.to_utc_offset_minutes)})
-                </td>
+                <td>{formatDepartureDateTime(flight.departure_at, flight.from_utc_offset_minutes)}</td>
+                <td>{formatArrivalDateTime(flight.arrival_at, flight.to_utc_offset_minutes)}</td>
                 <td>
                   <div>{flight.passenger_count}</div>
                   {flight.passenger_names.length > 0 && (

@@ -33,3 +33,15 @@ export const formatDateForInput = (utcIso: string, offsetMinutes: number): strin
   const minutes = padTimePart(local.getUTCMinutes());
   return `${year}-${month}-${day}T${hours}:${minutes}`;
 };
+
+const formatDateTimeWithOffset = (utcIso: string, offsetMinutes: number): string => {
+  const local = formatLocalDateTime(utcIso, offsetMinutes);
+  const offsetLabel = formatOffsetLabel(offsetMinutes);
+  return `${local} (${offsetLabel})`;
+};
+
+export const formatDepartureDateTime = (utcIso: string, offsetMinutes: number): string =>
+  `🛫 ${formatDateTimeWithOffset(utcIso, offsetMinutes)}`;
+
+export const formatArrivalDateTime = (utcIso: string, offsetMinutes: number): string =>
+  `🛬 ${formatDateTimeWithOffset(utcIso, offsetMinutes)}`;

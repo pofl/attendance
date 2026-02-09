@@ -1,7 +1,7 @@
 import type { FC } from "hono/jsx";
 import { getTranslations, type Locale } from "../i18n.js";
 import type { AttendeeRecord, FlightRecord } from "../repository.js";
-import { formatLocalDateTime, formatOffsetLabel } from "../utils/flightFormat.js";
+import { formatArrivalDateTime, formatDepartureDateTime } from "../utils/flightFormat.js";
 
 export const AttendeeFlightsSection: FC<{
   attendee: AttendeeRecord;
@@ -40,14 +40,8 @@ export const AttendeeFlightsSection: FC<{
                 <td>
                   {flight.from_airport} → {flight.to_airport}
                 </td>
-                <td>
-                  {formatLocalDateTime(flight.departure_at, flight.from_utc_offset_minutes)} (
-                  {formatOffsetLabel(flight.from_utc_offset_minutes)})
-                </td>
-                <td>
-                  {formatLocalDateTime(flight.arrival_at, flight.to_utc_offset_minutes)} (
-                  {formatOffsetLabel(flight.to_utc_offset_minutes)})
-                </td>
+                <td>{formatDepartureDateTime(flight.departure_at, flight.from_utc_offset_minutes)}</td>
+                <td>{formatArrivalDateTime(flight.arrival_at, flight.to_utc_offset_minutes)}</td>
                 <td>
                   <form
                     class="inline-form"
@@ -83,8 +77,7 @@ export const AttendeeFlightsSection: FC<{
                 {availableFlights.map((flight) => (
                   <option value={flight.id} key={flight.id}>
                     {flight.flight_number} · {flight.from_airport} → {flight.to_airport} ·{" "}
-                    {formatLocalDateTime(flight.departure_at, flight.from_utc_offset_minutes)} (
-                    {formatOffsetLabel(flight.from_utc_offset_minutes)})
+                    {formatDepartureDateTime(flight.departure_at, flight.from_utc_offset_minutes)}
                   </option>
                 ))}
               </select>
