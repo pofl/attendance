@@ -54,6 +54,20 @@ const getLocale = (c: { req: { raw: Request } }): Locale => {
 
 app.use("/static/*", serveStatic({ root: "./public", rewriteRequestPath: (path) => path.replace(/^\/static/, "") }));
 
+app.use("*", async (c, next) => {
+  await next();
+  const response = c.res;
+  const isHtmx = Boolean(c.req.header("HX-Request"));
+  const location = response.headers.get("Location");
+
+  if (isHtmx && location && response.status >= 300 && response.status < 400) {
+    c.header("HX-Redirect", location);
+    return c.body(null, 204);
+  }
+
+  return response;
+});
+
 const toUtcIsoString = (value: unknown): string | null => {
   if (value === null || value === undefined) return null;
   const raw = String(value).trim();
@@ -566,10 +580,6 @@ app.post("/flights/:id/delete", zValidator("param", idParamSchema), async (c) =>
   try {
     const { id } = c.req.valid("param");
     deleteFlight(db, id);
-    if (c.req.header("HX-Request")) {
-      c.header("HX-Redirect", "/flights");
-      return c.body(null, 204);
-    }
     return c.redirect("/flights");
   } catch (e) {
     console.error(e);
