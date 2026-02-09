@@ -65,7 +65,7 @@ export const FlightEditPage: FC<{
               value={formatDateForInput(flight.arrival_at, flight.to_utc_offset_minutes)}
             />
           </label>
-          <div class="button-row">
+          <div class="button-row items-end mb-2">
             <button type="submit">{editLabels.save}</button>
             <button type="button" class="button-secondary" hx-post={`/flights/${flight.id}/delete`}>
               {editLabels.delete}
