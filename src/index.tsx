@@ -1,6 +1,5 @@
 import { serve } from "@hono/node-server";
 import { serveStatic } from "@hono/node-server/serve-static";
-import { zValidator } from "@hono/zod-validator";
 import { config } from "dotenv";
 import { Hono } from "hono";
 import { getCookie, setCookie } from "hono/cookie";
@@ -40,6 +39,7 @@ import {
   type Attendee,
   type Flight,
 } from "./repository.js";
+import { zValidator } from "./validator-wrapper.js";
 
 config();
 const db = openDatabase();
