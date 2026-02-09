@@ -9,7 +9,6 @@ import {
   AttendeeFlightsSection,
   AttendeeForm,
   CockpitAttendeeListSection,
-  FlightManageFlightsSection,
   FlightPassengersListSection,
 } from "./components/index.js";
 import { openDatabase } from "./db.js";
@@ -17,7 +16,7 @@ import { DEFAULT_LOCALE, getTranslations, isValidLocale, type Locale } from "./i
 import {
   AttendeePage,
   CockpitPage,
-  FlightManagePage,
+  FlightEditPage,
   FlightPassengersPage,
   FlightsOverviewPage,
   IndexPage,
@@ -450,16 +449,25 @@ app.get("/flights", async (c) => {
   }
 });
 
-app.get("/flights/manage", async (c) => {
+app.get("/flights/:id/edit", zValidator("param", idParamSchema), async (c) => {
   const locale = getLocale(c);
   const t = getTranslations(locale);
   try {
-    const flights = getAllFlights(db);
-    return c.html(<FlightManagePage flights={flights} locale={locale} />);
+    const { id } = c.req.valid("param");
+    const flight = getFlightById(db, id);
+    if (!flight) {
+      return c.html(
+        <Layout locale={locale} currentPath="/flights">
+          <p class="error">{t.common.notFound}</p>
+        </Layout>,
+        404
+      );
+    }
+    return c.html(<FlightEditPage locale={locale} flight={flight} />);
   } catch (e) {
     console.error(e);
     return c.html(
-      <Layout locale={locale} currentPath="/flights/manage">
+      <Layout locale={locale} currentPath="/flights">
         <p class="error">{t.common.error}</p>
       </Layout>,
       500
@@ -489,20 +497,19 @@ app.post("/flights", async (c) => {
     }
 
     if (!flight) {
-      const flights = getAllFlights(db);
+      const flights = getFlightAggregates(db);
       return c.html(
-        <FlightManageFlightsSection locale={locale} flights={flights} message={t.common.error} messageType="error" />,
+        <FlightsOverviewPage locale={locale} flights={flights} message={t.common.error} messageType="error" />,
         400
       );
     }
     upsertFlight(db, flight);
-    const flights = getAllFlights(db);
-    return c.html(<FlightManageFlightsSection locale={locale} flights={flights} />);
+    return c.redirect("/flights");
   } catch (e) {
     console.error(e);
-    const flights = getAllFlights(db);
+    const flights = getFlightAggregates(db);
     return c.html(
-      <FlightManageFlightsSection locale={locale} flights={flights} message={t.common.error} messageType="error" />,
+      <FlightsOverviewPage locale={locale} flights={flights} message={t.common.error} messageType="error" />,
       500
     );
   }
@@ -518,22 +525,35 @@ app.post("/flights/:id", zValidator("param", idParamSchema), async (c) => {
     const flight = parseFlightFromPayload(formData as Record<string, unknown>);
 
     if (!flight) {
-      const flights = getAllFlights(db);
+      const existing = getFlightById(db, id);
+      if (!existing) {
+        return c.html(
+          <Layout locale={locale} currentPath="/flights">
+            <p class="error">{t.common.notFound}</p>
+          </Layout>,
+          404
+        );
+      }
       return c.html(
-        <FlightManageFlightsSection locale={locale} flights={flights} message={t.common.error} messageType="error" />,
+        <FlightEditPage locale={locale} flight={existing} message={t.common.error} messageType="error" />,
         400
       );
     }
     updateFlightById(db, id, flight);
-    const flights = getAllFlights(db);
-    return c.html(<FlightManageFlightsSection locale={locale} flights={flights} />);
+    return c.redirect(`/flights/${id}/edit`);
   } catch (e) {
     console.error(e);
-    const flights = getAllFlights(db);
-    return c.html(
-      <FlightManageFlightsSection locale={locale} flights={flights} message={t.common.error} messageType="error" />,
-      500
-    );
+    const id = Number(c.req.param("id"));
+    if (Number.isFinite(id)) {
+      const existing = getFlightById(db, id);
+      if (existing) {
+        return c.html(
+          <FlightEditPage locale={locale} flight={existing} message={t.common.error} messageType="error" />,
+          500
+        );
+      }
+    }
+    return c.body(null, 500);
   }
 });
 
@@ -543,15 +563,20 @@ app.post("/flights/:id/delete", zValidator("param", idParamSchema), async (c) =>
   try {
     const { id } = c.req.valid("param");
     deleteFlight(db, id);
-    const flights = getAllFlights(db);
-    return c.html(<FlightManageFlightsSection locale={locale} flights={flights} />);
+    return c.redirect("/flights");
   } catch (e) {
     console.error(e);
-    const flights = getAllFlights(db);
-    return c.html(
-      <FlightManageFlightsSection locale={locale} flights={flights} message={t.common.error} messageType="error" />,
-      500
-    );
+    const id = Number(c.req.param("id"));
+    if (Number.isFinite(id)) {
+      const flight = getFlightById(db, id);
+      if (flight) {
+        return c.html(
+          <FlightEditPage locale={locale} flight={flight} message={t.common.error} messageType="error" />,
+          500
+        );
+      }
+    }
+    return c.body(null, 500);
   }
 });
 
@@ -563,7 +588,7 @@ app.get("/flights/:id/passengers", zValidator("param", idParamSchema), async (c)
     const flight = getFlightById(db, id);
     if (!flight) {
       return c.html(
-        <Layout locale={locale} currentPath="/flights/manage">
+        <Layout locale={locale} currentPath="/flights">
           <p class="error">{t.common.notFound}</p>
         </Layout>,
         404
@@ -577,7 +602,7 @@ app.get("/flights/:id/passengers", zValidator("param", idParamSchema), async (c)
   } catch (e) {
     console.error(e);
     return c.html(
-      <Layout locale={locale} currentPath="/flights/manage">
+      <Layout locale={locale} currentPath="/flights">
         <p class="error">{t.common.error}</p>
       </Layout>,
       500

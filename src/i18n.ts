@@ -9,7 +9,6 @@ export interface Translations {
       home: string;
       cockpit: string;
       flightsOverview: string;
-      flightsManage: string;
     };
   };
   indexPage: {
@@ -71,9 +70,8 @@ export interface Translations {
     departure: string;
     arrival: string;
     passengers: string;
-  };
-  flightManagePage: {
-    title: string;
+    actions: string;
+    open: string;
     addFlightTitle: string;
     inputModeLabel: string;
     inputModeHint: string;
@@ -82,12 +80,11 @@ export interface Translations {
     importJsonTitle: string;
     importJsonHelp: string;
     importJsonPlaceholder: string;
-    existingFlights: string;
-    noFlights: string;
-    managePassengers: string;
-    delete: string;
+  };
+  flightEditPage: {
+    title: string;
     save: string;
-    details: string;
+    delete: string;
   };
   flightPassengersPage: {
     title: string;
@@ -131,7 +128,6 @@ const en_US: Translations = {
       home: "Home",
       cockpit: "Cockpit",
       flightsOverview: "Flights",
-      flightsManage: "Manage Flights",
     },
   },
   indexPage: {
@@ -193,9 +189,8 @@ const en_US: Translations = {
     departure: "Departure (local)",
     arrival: "Arrival (local)",
     passengers: "Passengers",
-  },
-  flightManagePage: {
-    title: "Manage Flights",
+    actions: "Actions",
+    open: "Open",
     addFlightTitle: "Add Flight",
     inputModeLabel: "Input mode",
     inputModeHint: "Choose how to add the flight details.",
@@ -205,12 +200,11 @@ const en_US: Translations = {
     importJsonHelp:
       "Paste a JSON object with flight fields. Include timezone offsets in the date strings. If provided, it overrides the individual fields above.",
     importJsonPlaceholder: FLIGHT_JSON_PLACEHOLDER,
-    existingFlights: "Existing Flights",
-    noFlights: "No flights found.",
-    managePassengers: "Manage passengers",
-    delete: "Delete",
+  },
+  flightEditPage: {
+    title: "Edit Flight",
     save: "Save changes",
-    details: "Details",
+    delete: "Delete",
   },
   flightPassengersPage: {
     title: "Manage Flight Passengers",
@@ -246,7 +240,6 @@ const de_DE: Translations = {
       home: "Start",
       cockpit: "Cockpit",
       flightsOverview: "Flüge",
-      flightsManage: "Flüge verwalten",
     },
   },
   indexPage: {
@@ -308,9 +301,8 @@ const de_DE: Translations = {
     departure: "Abflug (lokal)",
     arrival: "Ankunft (lokal)",
     passengers: "Passagiere",
-  },
-  flightManagePage: {
-    title: "Flüge verwalten",
+    actions: "Aktionen",
+    open: "Öffnen",
     addFlightTitle: "Flug hinzufügen",
     inputModeLabel: "Eingabemodus",
     inputModeHint: "Wähle aus, wie du die Flugdaten eingeben möchtest.",
@@ -320,12 +312,11 @@ const de_DE: Translations = {
     importJsonHelp:
       "JSON-Objekt mit Flugdaten einfügen. Zeitzonen-Offsets in den Datumsstrings angeben. Wenn vorhanden, überschreibt es die Felder oben.",
     importJsonPlaceholder: FLIGHT_JSON_PLACEHOLDER,
-    existingFlights: "Vorhandene Flüge",
-    noFlights: "Keine Flüge gefunden.",
-    managePassengers: "Passagiere verwalten",
-    delete: "Löschen",
+  },
+  flightEditPage: {
+    title: "Flug bearbeiten",
     save: "Änderungen speichern",
-    details: "Details",
+    delete: "Löschen",
   },
   flightPassengersPage: {
     title: "Flugpassagiere verwalten",

@@ -38,9 +38,6 @@ export const Layout: FC<LayoutProps> = (props) => {
           <a href="/flights" class={isActive("/flights") ? "active" : ""}>
             {t.common.nav.flightsOverview}
           </a>
-          <a href="/flights/manage" class={isActive("/flights/manage") ? "active" : ""}>
-            {t.common.nav.flightsManage}
-          </a>
         </nav>
         {props.children}
       </body>
