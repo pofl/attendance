@@ -158,11 +158,63 @@ const attendeeFlightParamSchema = z.object({
   attendeeId: z.coerce.number().int().positive(),
 });
 
+const localeFormSchema = z.object({
+  locale: z.string().trim().min(1),
+  redirect: z.string().trim().optional(),
+});
+
+const attendeeNameFormSchema = z.object({
+  name: z.string().trim().min(1),
+});
+
+const attendeeUpdateFormSchema = z.object({
+  locale: z.enum(["en_US", "de_DE"]),
+  passport_status: z.enum(["valid", "pending", "none"]),
+  visa_status: z.enum(["obtained", "pending", "none"]),
+  dietary_requirements: z.string().optional(),
+});
+
+const flightAssignmentFormSchema = z.object({
+  flight_id: z.coerce.number().int().positive(),
+});
+
+const flightPassengerFormSchema = z.object({
+  attendee_id: z.coerce.number().int().positive(),
+});
+
+const flightFormSchema = z.object({
+  input_mode: z.string().optional(),
+  flight_json: z.string().optional(),
+  flight_number: z.string().optional(),
+  from_airport: z.string().optional(),
+  to_airport: z.string().optional(),
+  from_utc_offset_minutes: z.union([z.string(), z.number()]).optional(),
+  to_utc_offset_minutes: z.union([z.string(), z.number()]).optional(),
+  departure_local: z.string().optional(),
+  arrival_local: z.string().optional(),
+  departure_at: z.string().optional(),
+  arrival_at: z.string().optional(),
+});
+
+const buildCockpitAttendeeList = (locale: Locale, message?: string, messageType?: "success" | "error") => {
+  const attendees = getAllAttendees(db);
+  const attendeesWithFlights = attendees.map((attendee) => ({
+    attendee,
+    flights: getFlightsForAttendee(db, attendee.id),
+  }));
+  return (
+    <CockpitAttendeeListSection
+      attendees={attendeesWithFlights}
+      locale={locale}
+      message={message}
+      messageType={messageType}
+    />
+  );
+};
+
 // Route to set locale preference
-app.post("/set-locale", async (c) => {
-  const formData = await c.req.parseBody();
-  const locale = formData.locale as string;
-  const redirect = (formData.redirect as string) || "/";
+app.post("/set-locale", zValidator("form", localeFormSchema), async (c) => {
+  const { locale, redirect } = c.req.valid("form");
 
   if (isValidLocale(locale)) {
     setCookie(c, "locale", locale, {
@@ -172,7 +224,7 @@ app.post("/set-locale", async (c) => {
     });
   }
 
-  c.header("HX-Redirect", redirect);
+  c.header("HX-Redirect", redirect || "/");
   return c.body(null, 204);
 });
 
@@ -181,45 +233,46 @@ app.get("/", (c) => {
   return c.html(<IndexPage locale={locale} />);
 });
 
-app.post("/attendee", async (c) => {
-  const formData = await c.req.parseBody();
-  const name = (formData.name as string)?.trim();
-  if (!name) {
-    return c.body(null, 400);
-  }
+app.post("/attendee", zValidator("form", attendeeNameFormSchema), async (c) => {
+  const { name } = c.req.valid("form");
   const destination = `/attendees/${encodeURIComponent(name)}`;
   c.header("HX-Redirect", destination);
   return c.body(null, 204);
 });
 
-app.put("/attendees/:name", zValidator("param", nameParamSchema), async (c) => {
-  const { name } = c.req.valid("param");
-  const locale = getLocale(c);
-  const t = getTranslations(locale);
-  try {
-    const formData = await c.req.parseBody();
+app.put(
+  "/attendees/:name",
+  zValidator("param", nameParamSchema),
+  zValidator("form", attendeeUpdateFormSchema),
+  async (c) => {
+    const { name } = c.req.valid("param");
+    const locale = getLocale(c);
+    const t = getTranslations(locale);
+    try {
+      const formData = c.req.valid("form");
 
-    const attendee: Attendee = {
-      name,
-      locale: formData.locale as string,
-      passport_status: formData.passport_status as "valid" | "pending" | "none",
-      visa_status: formData.visa_status as "obtained" | "pending" | "none",
-      dietary_requirements: (formData.dietary_requirements as string) || null,
-    };
+      const attendee: Attendee = {
+        name,
+        locale: formData.locale,
+        passport_status: formData.passport_status,
+        visa_status: formData.visa_status,
+        dietary_requirements: formData.dietary_requirements?.trim() || null,
+      };
 
-    upsertAttendee(db, attendee);
+      upsertAttendee(db, attendee);
 
-    // Fetch updated record and return the form
-    const updated = getAttendeeByName(db, name);
-    if (!updated) {
+      // Fetch updated record and return the form
+      const updated = getAttendeeByName(db, name);
+      if (!updated) {
+        return c.html(<p class="error">{t.common.error}</p>, 500);
+      }
+      return c.html(<AttendeeForm attendee={updated} locale={locale} />);
+    } catch (e) {
+      console.error(e);
       return c.html(<p class="error">{t.common.error}</p>, 500);
     }
-    return c.html(<AttendeeForm attendee={updated} locale={locale} />);
-  } catch (e) {
-    console.error(e);
-    return c.html(<p class="error">{t.common.error}</p>, 500);
   }
-});
+);
 
 app.get("/attendees/:name", zValidator("param", nameParamSchema), async (c) => {
   const { name } = c.req.valid("param");
@@ -273,27 +326,10 @@ app.get("/cockpit", async (c) => {
   }
 });
 
-app.post("/cockpit/attendees", async (c) => {
+app.post("/cockpit/attendees", zValidator("form", attendeeNameFormSchema), async (c) => {
   const locale = getLocale(c);
   const t = getTranslations(locale);
-  const formData = await c.req.parseBody();
-  const name = (formData.name as string)?.trim();
-  if (!name) {
-    const attendees = getAllAttendees(db);
-    const attendeesWithFlights = attendees.map((attendee) => ({
-      attendee,
-      flights: getFlightsForAttendee(db, attendee.id),
-    }));
-    return c.html(
-      <CockpitAttendeeListSection
-        attendees={attendeesWithFlights}
-        locale={locale}
-        message={t.common.error}
-        messageType="error"
-      />,
-      400
-    );
-  }
+  const { name } = c.req.valid("form");
   try {
     // Create new attendee with default values
     const attendee: Attendee = {
@@ -304,39 +340,39 @@ app.post("/cockpit/attendees", async (c) => {
       dietary_requirements: null,
     };
     upsertAttendee(db, attendee);
-    const attendees = getAllAttendees(db);
-    const attendeesWithFlights = attendees.map((item) => ({
-      attendee: item,
-      flights: getFlightsForAttendee(db, item.id),
-    }));
-    return c.html(<CockpitAttendeeListSection attendees={attendeesWithFlights} locale={locale} />);
+    return c.html(buildCockpitAttendeeList(locale));
   } catch (e) {
     console.error(e);
-    const attendees = getAllAttendees(db);
-    const attendeesWithFlights = attendees.map((attendee) => ({
-      attendee,
-      flights: getFlightsForAttendee(db, attendee.id),
-    }));
-    return c.html(
-      <CockpitAttendeeListSection
-        attendees={attendeesWithFlights}
-        locale={locale}
-        message={t.common.error}
-        messageType="error"
-      />,
-      500
-    );
+    return c.html(buildCockpitAttendeeList(locale, t.common.error, "error"), 500);
   }
 });
 
-app.post("/cockpit/attendees/:id/flights", zValidator("param", idParamSchema), async (c) => {
-  const locale = getLocale(c);
-  const t = getTranslations(locale);
-  try {
-    const { id: attendeeId } = c.req.valid("param");
-    const formData = await c.req.parseBody();
-    const flightId = Number(formData.flight_id);
-    if (!Number.isFinite(flightId)) {
+app.post(
+  "/cockpit/attendees/:id/flights",
+  zValidator("param", idParamSchema),
+  zValidator("form", flightAssignmentFormSchema),
+  async (c) => {
+    const locale = getLocale(c);
+    const t = getTranslations(locale);
+    try {
+      const { id: attendeeId } = c.req.valid("param");
+      const { flight_id: flightId } = c.req.valid("form");
+      addPassengerToFlight(db, flightId, attendeeId);
+      const attendee = getAttendeeById(db, attendeeId);
+      if (!attendee) {
+        return c.html("", 404);
+      }
+      const flights = getFlightsForAttendee(db, attendeeId);
+      const allFlights = getAllFlights(db);
+      return c.html(
+        <AttendeeFlightsSection attendee={attendee} flights={flights} allFlights={allFlights} locale={locale} />
+      );
+    } catch (e) {
+      console.error(e);
+      const attendeeId = Number(c.req.param("id"));
+      if (!Number.isFinite(attendeeId)) {
+        return c.body(null, 500);
+      }
       const attendee = getAttendeeById(db, attendeeId);
       if (!attendee) {
         return c.html("", 404);
@@ -352,44 +388,11 @@ app.post("/cockpit/attendees/:id/flights", zValidator("param", idParamSchema), a
           message={t.common.error}
           messageType="error"
         />,
-        400
+        500
       );
     }
-    addPassengerToFlight(db, flightId, attendeeId);
-    const attendee = getAttendeeById(db, attendeeId);
-    if (!attendee) {
-      return c.html("", 404);
-    }
-    const flights = getFlightsForAttendee(db, attendeeId);
-    const allFlights = getAllFlights(db);
-    return c.html(
-      <AttendeeFlightsSection attendee={attendee} flights={flights} allFlights={allFlights} locale={locale} />
-    );
-  } catch (e) {
-    console.error(e);
-    const attendeeId = Number(c.req.param("id"));
-    if (!Number.isFinite(attendeeId)) {
-      return c.body(null, 500);
-    }
-    const attendee = getAttendeeById(db, attendeeId);
-    if (!attendee) {
-      return c.html("", 404);
-    }
-    const flights = getFlightsForAttendee(db, attendeeId);
-    const allFlights = getAllFlights(db);
-    return c.html(
-      <AttendeeFlightsSection
-        attendee={attendee}
-        flights={flights}
-        allFlights={allFlights}
-        locale={locale}
-        message={t.common.error}
-        messageType="error"
-      />,
-      500
-    );
   }
-});
+);
 
 app.post("/cockpit/attendees/:id/flights/:flightId/remove", zValidator("param", flightIdParamSchema), async (c) => {
   const locale = getLocale(c);
@@ -475,12 +478,12 @@ app.get("/flights/:id/edit", zValidator("param", idParamSchema), async (c) => {
   }
 });
 
-app.post("/flights", async (c) => {
+app.post("/flights", zValidator("form", flightFormSchema), async (c) => {
   const locale = getLocale(c);
   const t = getTranslations(locale);
   try {
-    const formData = await c.req.parseBody();
-    const jsonPayload = typeof formData.flight_json === "string" ? formData.flight_json.trim() : "";
+    const formData = c.req.valid("form");
+    const jsonPayload = formData.flight_json?.trim() ?? "";
     let flight: Flight | null = null;
 
     if (jsonPayload) {
@@ -515,13 +518,13 @@ app.post("/flights", async (c) => {
   }
 });
 
-app.post("/flights/:id", zValidator("param", idParamSchema), async (c) => {
+app.post("/flights/:id", zValidator("param", idParamSchema), zValidator("form", flightFormSchema), async (c) => {
   const locale = getLocale(c);
   const t = getTranslations(locale);
   try {
     const { id } = c.req.valid("param");
 
-    const formData = await c.req.parseBody();
+    const formData = c.req.valid("form");
     const flight = parseFlightFromPayload(formData as Record<string, unknown>);
 
     if (!flight) {
@@ -610,59 +613,46 @@ app.get("/flights/:id/passengers", zValidator("param", idParamSchema), async (c)
   }
 });
 
-app.post("/flights/:id/passengers", zValidator("param", idParamSchema), async (c) => {
-  const locale = getLocale(c);
-  const t = getTranslations(locale);
-  try {
-    const { id } = c.req.valid("param");
-    const formData = await c.req.parseBody();
-    const attendeeId = Number(formData.attendee_id);
-    if (!Number.isFinite(attendeeId)) {
+app.post(
+  "/flights/:id/passengers",
+  zValidator("param", idParamSchema),
+  zValidator("form", flightPassengerFormSchema),
+  async (c) => {
+    const locale = getLocale(c);
+    const t = getTranslations(locale);
+    try {
+      const { id } = c.req.valid("param");
+      const { attendee_id: attendeeId } = c.req.valid("form");
+      addPassengerToFlight(db, id, attendeeId);
       const passengers = getPassengersForFlight(db, id);
       const flight = getFlightById(db, id);
       if (!flight) {
         return c.html("", 404);
       }
-      return c.html(
-        <FlightPassengersListSection
-          locale={locale}
-          flight={flight}
-          passengers={passengers}
-          message={t.common.error}
-          messageType="error"
-        />,
-        400
-      );
-    }
-    addPassengerToFlight(db, id, attendeeId);
-    const passengers = getPassengersForFlight(db, id);
-    const flight = getFlightById(db, id);
-    if (!flight) {
-      return c.html("", 404);
-    }
-    return c.html(<FlightPassengersListSection locale={locale} flight={flight} passengers={passengers} />);
-  } catch (e) {
-    console.error(e);
-    const id = Number(c.req.param("id"));
-    if (Number.isFinite(id)) {
-      const passengers = getPassengersForFlight(db, id);
-      const flight = getFlightById(db, id);
-      if (flight) {
-        return c.html(
-          <FlightPassengersListSection
-            locale={locale}
-            flight={flight}
-            passengers={passengers}
-            message={t.common.error}
-            messageType="error"
-          />,
-          500
-        );
+      return c.html(<FlightPassengersListSection locale={locale} flight={flight} passengers={passengers} />);
+    } catch (e) {
+      console.error(e);
+      const id = Number(c.req.param("id"));
+      if (Number.isFinite(id)) {
+        const passengers = getPassengersForFlight(db, id);
+        const flight = getFlightById(db, id);
+        if (flight) {
+          return c.html(
+            <FlightPassengersListSection
+              locale={locale}
+              flight={flight}
+              passengers={passengers}
+              message={t.common.error}
+              messageType="error"
+            />,
+            500
+          );
+        }
       }
+      return c.body(null, 500);
     }
-    return c.body(null, 500);
   }
-});
+);
 
 app.post("/flights/:id/passengers/:attendeeId/remove", zValidator("param", attendeeFlightParamSchema), async (c) => {
   const locale = getLocale(c);
