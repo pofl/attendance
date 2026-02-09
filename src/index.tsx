@@ -566,6 +566,10 @@ app.post("/flights/:id/delete", zValidator("param", idParamSchema), async (c) =>
   try {
     const { id } = c.req.valid("param");
     deleteFlight(db, id);
+    if (c.req.header("HX-Request")) {
+      c.header("HX-Redirect", "/flights");
+      return c.body(null, 204);
+    }
     return c.redirect("/flights");
   } catch (e) {
     console.error(e);

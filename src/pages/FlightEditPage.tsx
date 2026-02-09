@@ -67,13 +67,10 @@ export const FlightEditPage: FC<{
           </label>
           <div class="button-row">
             <button type="submit">{editLabels.save}</button>
+            <button type="button" class="button-secondary" hx-post={`/flights/${flight.id}/delete`}>
+              {editLabels.delete}
+            </button>
           </div>
-        </form>
-
-        <form class="inline-form mt-2" method="post" action={`/flights/${flight.id}/delete`}>
-          <button type="submit" class="button-secondary">
-            {editLabels.delete}
-          </button>
         </form>
       </section>
     </Layout>
