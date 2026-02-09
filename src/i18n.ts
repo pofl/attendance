@@ -29,6 +29,7 @@ export interface Translations {
     visaStatus: string;
     dietaryRequirements: string;
     save: string;
+    delete: string;
     passportOptions: {
       valid: string;
       pending: string;
@@ -148,6 +149,7 @@ const en_US: Translations = {
     visaStatus: "Visa Status",
     dietaryRequirements: "Dietary Requirements",
     save: "Save",
+    delete: "Delete",
     passportOptions: {
       valid: "Valid",
       pending: "Pending",
@@ -260,6 +262,7 @@ const de_DE: Translations = {
     visaStatus: "Visum-Status",
     dietaryRequirements: "Ernährungsanforderungen",
     save: "Speichern",
+    delete: "Löschen",
     passportOptions: {
       valid: "Gültig",
       pending: "Beantragt",

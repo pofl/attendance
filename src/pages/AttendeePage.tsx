@@ -1,6 +1,6 @@
 import type { FC } from "hono/jsx";
-import { AttendeeForm } from "../components/AttendeeForm.js";
 import { AttendeeFlightsSection } from "../components/AttendeeFlightsSection.js";
+import { AttendeeForm } from "../components/AttendeeForm.js";
 import { getTranslations, type Locale } from "../i18n.js";
 import type { AttendeeRecord, FlightRecord } from "../repository.js";
 import { Layout } from "./Layout.js";
@@ -24,6 +24,13 @@ export const AttendeePage: FC<{
         <AttendeeForm attendee={attendee} locale={locale} />
       </article>
       <AttendeeFlightsSection attendee={attendee} flights={flights} allFlights={allFlights} locale={locale} />
+      <button
+        type="button"
+        class="button-secondary mt-2"
+        hx-post={`/attendees/${encodeURIComponent(attendee.name)}/delete`}
+      >
+        {t.attendeeForm.delete}
+      </button>
     </Layout>
   );
 };

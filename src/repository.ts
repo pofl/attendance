@@ -100,6 +100,15 @@ export function upsertAttendee(db: Database, attendee: Attendee): void {
   }
 }
 
+export function deleteAttendeeByName(db: Database, name: string): void {
+  try {
+    db.prepare("DELETE FROM attendees WHERE name = ?").run(name);
+  } catch (error) {
+    console.error("Error deleting attendee:", error);
+    throw error;
+  }
+}
+
 export interface Flight {
   flight_number: string;
   from_airport: string;

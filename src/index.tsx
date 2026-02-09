@@ -23,6 +23,7 @@ import {
 } from "./pages/index.js";
 import {
   addPassengerToFlight,
+  deleteAttendeeByName,
   deleteFlight,
   getAllAttendees,
   getAllFlights,
@@ -287,6 +288,25 @@ app.put(
     }
   }
 );
+
+app.post("/attendees/:name/delete", zValidator("param", nameParamSchema), async (c) => {
+  const locale = getLocale(c);
+  const t = getTranslations(locale);
+  try {
+    const { name } = c.req.valid("param");
+    deleteAttendeeByName(db, name);
+    return c.redirect("/cockpit");
+  } catch (e) {
+    console.error(e);
+    const name = c.req.param("name");
+    return c.html(
+      <Layout locale={locale} currentPath={`/attendees/${encodeURIComponent(name)}`}>
+        <p class="error">{t.common.error}</p>
+      </Layout>,
+      500
+    );
+  }
+});
 
 app.get("/attendees/:name", zValidator("param", nameParamSchema), async (c) => {
   const { name } = c.req.valid("param");
