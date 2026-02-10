@@ -13,6 +13,7 @@ import {
 import { openDatabase } from "./db.js";
 import { DEFAULT_LOCALE, getTranslations, isValidLocale, type Locale } from "./i18n.js";
 import { MigrationRunner } from "./migrate.js";
+import { migrations } from "./migrations.js";
 import {
   AttendeePage,
   CockpitPage,
@@ -41,7 +42,6 @@ import {
   type Attendee,
   type Flight,
 } from "./repository.js";
-import { migrations } from "./run-migrate.js";
 import { zValidator } from "./validator-wrapper.js";
 
 config();
