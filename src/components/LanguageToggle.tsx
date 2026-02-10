@@ -3,9 +3,16 @@ import type { Locale } from "../i18n.js";
 
 export const LanguageToggle: FC<{ locale: Locale; currentPath: string }> = ({ locale, currentPath }) => {
   return (
-    <form class="language-toggle" hx-post="/set-locale">
+    <form class="language-toggle">
       <input type="hidden" name="redirect" value={currentPath} />
-      <select name="locale" class="language-select" onchange="this.form.submit()">
+      <select
+        name="locale"
+        class="language-select"
+        hx-post="/set-locale"
+        hx-trigger="change"
+        hx-include="closest form"
+        hx-swap="none"
+      >
         <option value="en_US" selected={locale === "en_US"}>
           🇺🇸 English
         </option>
