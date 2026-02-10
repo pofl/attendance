@@ -5,7 +5,7 @@ import { MigrationRunner } from "./migrate.js";
 
 config();
 
-const migrations: Migration[] = [
+export const migrations: Migration[] = [
   {
     id: "20260111-create-table-attendees",
     sql: `
