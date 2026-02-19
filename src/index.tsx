@@ -5,6 +5,15 @@ import { Hono } from "hono";
 import { getCookie, setCookie } from "hono/cookie";
 import { z } from "zod";
 import {
+  authenticate,
+  createUser,
+  deleteSession,
+  getAllUsers,
+  getValidSession,
+  SESSION_COOKIE_MAX_AGE,
+  SESSION_COOKIE_NAME,
+} from "./auth.js";
+import {
   AttendeeFlightsSection,
   AttendeeForm,
   CockpitAttendeeListSection,
@@ -22,6 +31,7 @@ import {
   FlightsOverviewPage,
   IndexPage,
   Layout,
+  LoginPage,
 } from "./pages/index.js";
 import {
   addPassengerToFlight,
@@ -50,6 +60,25 @@ const db = openDatabase();
 const runner = new MigrationRunner(db);
 runner.runMigrations(migrations);
 
+// Seed: create a default admin user if no users exist.
+{
+  const users = getAllUsers(db);
+  if (users.length === 0) {
+    const seedUser =
+      process.env.SEED_USERNAME ??
+      (() => {
+        throw new Error("SEED_USERNAME environment variable is required when seeding the database");
+      })();
+    const seedPass =
+      process.env.SEED_PASSWORD ??
+      (() => {
+        throw new Error("SEED_PASSWORD environment variable is required when seeding the database");
+      })();
+    createUser(db, seedUser, seedPass);
+    console.log(`Seeded default user "${seedUser}". Change the password after first login.`);
+  }
+}
+
 const app = new Hono();
 
 // Helper to get locale from cookie
@@ -59,6 +88,19 @@ const getLocale = (c: { req: { raw: Request } }): Locale => {
 };
 
 app.use("/static/*", serveStatic({ root: "./public", rewriteRequestPath: (path) => path.replace(/^\/static/, "") }));
+
+// ── Auth middleware: protect all routes except /login and /static ──
+app.use("*", async (c, next) => {
+  const path = new URL(c.req.url).pathname;
+  if (path === "/login" || path.startsWith("/static")) {
+    return next();
+  }
+  const token = getCookie(c, SESSION_COOKIE_NAME);
+  if (!token || !getValidSession(db, token)) {
+    return c.redirect("/login");
+  }
+  return next();
+});
 
 app.use("*", async (c, next) => {
   await next();
@@ -246,6 +288,49 @@ app.post("/set-locale", zValidator("form", localeFormSchema), async (c) => {
 
   c.header("HX-Redirect", redirect || "/");
   return c.body(null, 204);
+});
+
+// ── Login / Logout routes ──
+
+const loginFormSchema = z.object({
+  username: z.string().trim().min(1),
+  password: z.string().min(1),
+});
+
+app.get("/login", (c) => {
+  const locale = getLocale(c);
+  // If already logged in, redirect to home
+  const token = getCookie(c, SESSION_COOKIE_NAME);
+  if (token && getValidSession(db, token)) {
+    return c.redirect("/");
+  }
+  return c.html(<LoginPage locale={locale} />);
+});
+
+app.post("/login", zValidator("form", loginFormSchema), async (c) => {
+  const locale = getLocale(c);
+  const t = getTranslations(locale);
+  const { username, password } = c.req.valid("form");
+  const sessionToken = authenticate(db, username, password);
+  if (!sessionToken) {
+    return c.html(<LoginPage locale={locale} error={t.loginPage.invalidCredentials} />, 401);
+  }
+  setCookie(c, SESSION_COOKIE_NAME, sessionToken, {
+    path: "/",
+    maxAge: SESSION_COOKIE_MAX_AGE,
+    httpOnly: true,
+    sameSite: "Lax",
+  });
+  return c.redirect("/");
+});
+
+app.post("/logout", async (c) => {
+  const token = getCookie(c, SESSION_COOKIE_NAME);
+  if (token) {
+    deleteSession(db, token);
+  }
+  setCookie(c, SESSION_COOKIE_NAME, "", { path: "/", maxAge: 0 });
+  return c.redirect("/login");
 });
 
 app.get("/", (c) => {

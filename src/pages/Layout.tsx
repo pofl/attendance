@@ -38,6 +38,9 @@ export const Layout: FC<LayoutProps> = (props) => {
           <a href="/flights" class={isActive("/flights") ? "active" : ""}>
             {t.common.nav.flightsOverview}
           </a>
+          <form method="post" action="/logout" class="nav-logout">
+            <button type="submit">{t.common.nav.logout}</button>
+          </form>
         </nav>
         {props.children}
       </body>

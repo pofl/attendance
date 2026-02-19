@@ -113,4 +113,36 @@ export const migrations: Migration[] = [
       ALTER TABLE attendees_new RENAME TO attendees;
     `,
   },
+  {
+    id: "20260219-create-table-users",
+    sql: `
+      CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY,
+        created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
+        updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
+        username TEXT NOT NULL,
+        password TEXT NOT NULL,
+        CONSTRAINT users_username_unique UNIQUE (username),
+        CONSTRAINT users_created_at_utc CHECK (created_at LIKE '%Z' AND datetime(created_at) IS NOT NULL),
+        CONSTRAINT users_updated_at_utc CHECK (updated_at LIKE '%Z' AND datetime(updated_at) IS NOT NULL)
+      );
+    `,
+  },
+  {
+    id: "20260219-create-table-sessions",
+    sql: `
+      CREATE TABLE IF NOT EXISTS sessions (
+        token TEXT PRIMARY KEY,
+        user_id INTEGER NOT NULL,
+        created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
+        expires_at TEXT NOT NULL,
+        CONSTRAINT sessions_created_at_utc CHECK (created_at LIKE '%Z' AND datetime(created_at) IS NOT NULL),
+        CONSTRAINT sessions_expires_at_utc CHECK (expires_at LIKE '%Z' AND datetime(expires_at) IS NOT NULL),
+        FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+      );
+
+      CREATE INDEX IF NOT EXISTS sessions_user_idx ON sessions (user_id);
+      CREATE INDEX IF NOT EXISTS sessions_expires_idx ON sessions (expires_at);
+    `,
+  },
 ];

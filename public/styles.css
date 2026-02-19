@@ -72,6 +72,26 @@ body {
       background-color: var(--color-primary);
     }
   }
+
+  .nav-logout {
+    margin-left: auto;
+
+    button {
+      background: none;
+      border: none;
+      color: var(--color-text-muted);
+      font: inherit;
+      font-weight: 600;
+      padding: 0.35rem 0.6rem;
+      border-radius: var(--radius);
+      cursor: pointer;
+
+      &:hover {
+        background-color: var(--color-bg);
+        color: var(--color-error);
+      }
+    }
+  }
 }
 
 /* Typography */

@@ -9,7 +9,17 @@ export interface Translations {
       home: string;
       cockpit: string;
       flightsOverview: string;
+      logout: string;
     };
+  };
+  loginPage: {
+    title: string;
+    username: string;
+    usernamePlaceholder: string;
+    password: string;
+    passwordPlaceholder: string;
+    submit: string;
+    invalidCredentials: string;
   };
   indexPage: {
     title: string;
@@ -129,7 +139,17 @@ const en_US: Translations = {
       home: "Home",
       cockpit: "Cockpit",
       flightsOverview: "Flights",
+      logout: "Logout",
     },
+  },
+  loginPage: {
+    title: "Login",
+    username: "Username",
+    usernamePlaceholder: "Enter your username",
+    password: "Password",
+    passwordPlaceholder: "Enter your password",
+    submit: "Log in",
+    invalidCredentials: "Invalid username or password.",
   },
   indexPage: {
     title: "Attendance",
@@ -242,7 +262,17 @@ const de_DE: Translations = {
       home: "Start",
       cockpit: "Cockpit",
       flightsOverview: "Flüge",
+      logout: "Abmelden",
     },
+  },
+  loginPage: {
+    title: "Anmeldung",
+    username: "Benutzername",
+    usernamePlaceholder: "Benutzername eingeben",
+    password: "Passwort",
+    passwordPlaceholder: "Passwort eingeben",
+    submit: "Anmelden",
+    invalidCredentials: "Ungültiger Benutzername oder Passwort.",
   },
   indexPage: {
     title: "Anwesenheit",

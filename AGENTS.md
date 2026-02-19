@@ -8,7 +8,9 @@ better-sqlite3. For interactivity, Alpine.js is used for client-side stateful
 interaction and HTMX is used for interactions with the server. Nested CSS is
 used. Progressive Enhancement is ignored. The Post-Redirect-Get pattern is used
 but unless HTMX can avoid a page reload. All incoming request params and bodies
-should be validated using Hono's zValidator Middleware ().
+should be validated using Hono's zValidator Middleware.
+
+Documentation should be kept up to date with domain knowledge from user prompts.
 
 ## Repo facts
 
@@ -61,15 +63,28 @@ should be validated using Hono's zValidator Middleware ().
 ### Database
 
 - src/db.ts: opens SQLite with better-sqlite3.
-- src/repository.ts: CRUD helpers for attendees.
+- src/repository.ts: CRUD helpers for attendees, flights, passengers.
+- src/auth.ts: user & session CRUD, authenticate(), plaintext password comparison.
 - src/migrate.ts + src/run-migrate.ts: migration framework and migrations list.
+- src/migrations.ts: ordered list of SQL migrations (attendees, flights,
+  flight_passengers, users, sessions).
 
 ### UI/Pages
 
-- src/pages/\*.tsx: Layout + Index, Attendee, Cockpit pages.
-- src/components/\*.tsx: AttendeeForm, LanguageToggle.
+- src/pages/\*.tsx: Layout + Login, Index, Attendee, Cockpit, Flight pages.
+- src/components/\*.tsx: AttendeeForm, LanguageToggle, etc.
 - src/i18n.ts: translations and locale helpers.
 - public/styles.css: global styling served at /static.
+
+### Auth
+
+- Plaintext password auth. Passwords stored unencrypted in the users table.
+- Session cookie (httpOnly, 30-day expiry) checked by middleware on every
+  request except /login and /static/\*.
+- On first startup, a seed user is created from SEED_USERNAME / SEED_PASSWORD
+  env vars (default: admin/admin).
+- User management is done directly in SQLite (no admin UI).
+- The app operator acts as the password reset mechanism.
 
 ### Config
 
@@ -100,11 +115,16 @@ package.json, public/, src/, tsconfig.json
 ## Next-level directory listing
 
 - public/: styles.css
-- src/: db.ts, global.d.ts, i18n.ts, index.tsx, migrate.ts, repository.ts,
-  run-migrate.ts, components/, pages/
-- src/components/: AttendeeForm.tsx, LanguageToggle.tsx, index.ts
-- src/pages/: AttendeePage.tsx, CockpitPage.tsx, IndexPage.tsx, Layout.tsx,
-  index.ts
+- src/: db.ts, global.d.ts, i18n.ts, index.tsx, migrate.ts, migrations.ts,
+  auth.ts, repository.ts, run-migrate.ts, validator-wrapper.ts, components/,
+  pages/, utils/
+- src/components/: AttendeeFlightsSection.tsx, AttendeeForm.tsx,
+  CockpitAttendeeListSection.tsx, FlightPassengersListSection.tsx, index.ts,
+  LanguageToggle.tsx
+- src/pages/: AttendeePage.tsx, CockpitPage.tsx, FlightEditPage.tsx,
+  FlightPassengersPage.tsx, FlightsOverviewPage.tsx, IndexPage.tsx, Layout.tsx,
+  LoginPage.tsx, index.ts
+- src/utils/: flightFormat.ts
 
 ## Key source snippets (for quick orientation)
 
@@ -112,7 +132,10 @@ package.json, public/, src/, tsconfig.json
 - DB open: new SQLite(process.env.DATABASE_PATH ?? "./data/attendance.db") in
   src/db.ts.
 - Migration table and runner: src/migrate.ts; migration list in
-  src/run-migrate.ts.
+  src/migrations.ts.
+- Auth module: src/auth.ts; session cookie name is "session".
+- Seed user: created in src/index.tsx startup block from SEED_USERNAME /
+  SEED_PASSWORD env vars.
 
 ## Guidance for future agents
 
