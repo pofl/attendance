@@ -1,3 +1,6 @@
+import type { Context } from "hono";
+import { getCookie } from "hono/cookie";
+
 export type Locale = "en_US" | "de_DE";
 
 export interface Translations {
@@ -392,4 +395,10 @@ export function getTranslations(locale: string): Translations {
 
 export function isValidLocale(locale: string): locale is Locale {
   return locale === "en_US" || locale === "de_DE";
+}
+
+/** Read the locale cookie, falling back to DEFAULT_LOCALE. */
+export function getLocale(c: Context): Locale {
+  const locale = getCookie(c, "locale");
+  return isValidLocale(locale ?? "") ? (locale as Locale) : DEFAULT_LOCALE;
 }

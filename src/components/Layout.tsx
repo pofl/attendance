@@ -1,6 +1,6 @@
 import type { Child, FC } from "hono/jsx";
-import { LanguageToggle } from "../components/LanguageToggle.js";
 import { getTranslations, type Locale } from "../i18n.js";
+import { LanguageToggle } from "./LanguageToggle.js";
 
 interface LayoutProps {
   children?: Child;
