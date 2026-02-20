@@ -3,7 +3,14 @@ import { Hono } from "hono";
 import { getCookie, setCookie } from "hono/cookie";
 import type { FC } from "hono/jsx";
 import { z } from "zod";
-import { authenticate, deleteSession, getValidSession, SESSION_COOKIE_MAX_AGE, SESSION_COOKIE_NAME } from "../auth.js";
+import {
+  authenticate,
+  deleteSession,
+  getUserByUsername,
+  getUserForValidSessionToken,
+  SESSION_COOKIE_MAX_AGE,
+  SESSION_COOKIE_NAME,
+} from "../auth.js";
 import { getLocale, getTranslations, type Locale } from "../i18n.js";
 import { zValidator } from "../validator-wrapper.js";
 
@@ -55,8 +62,11 @@ export const createLoginRoutes = (db: Database) => {
   app.get("/login", (c) => {
     const locale = getLocale(c);
     const token = getCookie(c, SESSION_COOKIE_NAME);
-    if (token && getValidSession(db, token)) {
-      return c.redirect("/");
+    if (token) {
+      const user = getUserForValidSessionToken(db, token);
+      if (user) {
+        return c.redirect("/me");
+      }
     }
     return c.html(<LoginPage locale={locale} />);
   });
@@ -75,7 +85,8 @@ export const createLoginRoutes = (db: Database) => {
       httpOnly: true,
       sameSite: "Lax",
     });
-    return c.redirect("/");
+    const user = getUserByUsername(db, username);
+    return c.redirect("/me");
   });
 
   app.post("/logout", async (c) => {

@@ -145,4 +145,81 @@ export const migrations: Migration[] = [
       CREATE INDEX IF NOT EXISTS sessions_expires_idx ON sessions (expires_at);
     `,
   },
+  {
+    id: "20260220-users-superuser-and-attendee-link",
+    sql: `
+      ALTER TABLE users ADD COLUMN is_superuser INTEGER NOT NULL DEFAULT 0;
+
+      INSERT INTO users (username, password, is_superuser)
+      SELECT a.name, 'changeme', 0
+      FROM attendees a
+      LEFT JOIN users u ON u.username = a.name
+      WHERE u.id IS NULL;
+
+      CREATE TABLE IF NOT EXISTS attendees_new (
+        id INTEGER PRIMARY KEY,
+
+        created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
+        updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
+
+        user_id INTEGER NOT NULL,
+        name TEXT NOT NULL,
+        locale TEXT NOT NULL,
+        passport_status TEXT NOT NULL CHECK (passport_status IN ('valid', 'pending', 'none')),
+        visa_status TEXT NOT NULL CHECK (visa_status IN ('obtained', 'pending', 'none')),
+        dietary_requirements TEXT,
+        CONSTRAINT attendees_user_unique UNIQUE (user_id),
+        CONSTRAINT attendees_name_unique UNIQUE (name),
+        CONSTRAINT attendees_created_at_utc CHECK (created_at LIKE '%Z' AND datetime(created_at) IS NOT NULL),
+        CONSTRAINT attendees_updated_at_utc CHECK (updated_at LIKE '%Z' AND datetime(updated_at) IS NOT NULL),
+        FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+      );
+
+      INSERT INTO attendees_new (
+        id,
+        created_at,
+        updated_at,
+        user_id,
+        name,
+        locale,
+        passport_status,
+        visa_status,
+        dietary_requirements
+      )
+      SELECT
+        a.id,
+        a.created_at,
+        a.updated_at,
+        u.id,
+        u.username,
+        a.locale,
+        a.passport_status,
+        a.visa_status,
+        a.dietary_requirements
+      FROM attendees a
+      INNER JOIN users u ON u.username = a.name;
+
+      INSERT INTO attendees_new (
+        user_id,
+        name,
+        locale,
+        passport_status,
+        visa_status,
+        dietary_requirements
+      )
+      SELECT
+        u.id,
+        u.username,
+        'en_US',
+        'none',
+        'none',
+        NULL
+      FROM users u
+      LEFT JOIN attendees_new a ON a.user_id = u.id
+      WHERE a.id IS NULL;
+
+      DROP TABLE attendees;
+      ALTER TABLE attendees_new RENAME TO attendees;
+    `,
+  },
 ];

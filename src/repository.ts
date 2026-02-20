@@ -1,6 +1,7 @@
 import type { Database } from "better-sqlite3";
 
 export interface Attendee {
+  user_id: number;
   name: string;
   locale: string;
   passport_status: "valid" | "pending" | "none";
@@ -12,6 +13,7 @@ export interface AttendeeRecord {
   id: number;
   created_at: string;
   updated_at: string;
+  user_id: number;
   name: string;
   locale: string;
   passport_status: "valid" | "pending" | "none";
@@ -24,6 +26,7 @@ function parseAttendeeRecord(row: Record<string, unknown>): AttendeeRecord {
     id: row.id as number,
     created_at: row.created_at as string,
     updated_at: row.updated_at as string,
+    user_id: Number(row.user_id),
     name: row.name as string,
     locale: row.locale as string,
     passport_status: row.passport_status as "valid" | "pending" | "none",
@@ -55,6 +58,41 @@ export function getAttendeeByName(db: Database, name: string): AttendeeRecord | 
   }
 }
 
+export function getAttendeeByUsername(db: Database, username: string): AttendeeRecord | null {
+  try {
+    const row = db
+      .prepare(
+        `
+          SELECT a.*
+          FROM attendees a
+          INNER JOIN users u ON u.id = a.user_id
+          WHERE u.username = ?
+        `
+      )
+      .get(username);
+    if (!row) {
+      return null;
+    }
+    return parseAttendeeRecord(row as Record<string, unknown>);
+  } catch (error) {
+    console.error("Error getting attendee by username:", error);
+    throw error;
+  }
+}
+
+export function getAttendeeByUserId(db: Database, userId: number): AttendeeRecord | null {
+  try {
+    const row = db.prepare("SELECT * FROM attendees WHERE user_id = ?").get(userId);
+    if (!row) {
+      return null;
+    }
+    return parseAttendeeRecord(row as Record<string, unknown>);
+  } catch (error) {
+    console.error("Error getting attendee by user id:", error);
+    throw error;
+  }
+}
+
 export function getAttendeeById(db: Database, id: number): AttendeeRecord | null {
   try {
     const row = db.prepare("SELECT * FROM attendees WHERE id = ?").get(id);
@@ -72,19 +110,22 @@ export function upsertAttendee(db: Database, attendee: Attendee): void {
   try {
     const statement = db.prepare(`
       INSERT INTO attendees (
+        user_id,
         name,
         locale,
         passport_status,
         visa_status,
         dietary_requirements
       ) VALUES (
+        @user_id,
         @name,
         @locale,
         @passport_status,
         @visa_status,
         @dietary_requirements
       )
-      ON CONFLICT (name) DO UPDATE SET
+      ON CONFLICT (user_id) DO UPDATE SET
+        name = excluded.name,
         locale = excluded.locale,
         passport_status = excluded.passport_status,
         visa_status = excluded.visa_status,
@@ -98,6 +139,23 @@ export function upsertAttendee(db: Database, attendee: Attendee): void {
     console.error("Error upserting attendee:", error);
     throw error;
   }
+}
+
+export function createDefaultAttendeeForUser(db: Database, userId: number, username: string): AttendeeRecord {
+  const attendee: Attendee = {
+    user_id: userId,
+    name: username,
+    locale: "en_US",
+    passport_status: "none",
+    visa_status: "none",
+    dietary_requirements: null,
+  };
+  upsertAttendee(db, attendee);
+  const created = getAttendeeByUserId(db, userId);
+  if (!created) {
+    throw new Error(`Could not create attendee for user ${username}`);
+  }
+  return created;
 }
 
 export function deleteAttendeeByName(db: Database, name: string): void {

@@ -4,12 +4,13 @@ import { config } from "dotenv";
 import { Hono } from "hono";
 import { getCookie, setCookie } from "hono/cookie";
 import { z } from "zod";
-import { createUser, getAllUsers, getValidSession, SESSION_COOKIE_NAME } from "./auth.js";
+import { createUser, getAllUsers, getUserForValidSessionToken, SESSION_COOKIE_NAME } from "./auth.js";
 import { openDatabase } from "./db.js";
 import { isValidLocale } from "./i18n.js";
 import { MigrationRunner } from "./migrate.js";
 import { migrations } from "./migrations.js";
-import { createAttendeeRoutes } from "./routes/attendee.js";
+import { createDefaultAttendeeForUser } from "./repository.js";
+import { createAttendeeRoutes, createMeRoutes } from "./routes/attendee.js";
 import { createCockpitRoutes } from "./routes/cockpit.js";
 import { createFlightRoutes } from "./routes/flights.js";
 import { createHomeRoutes } from "./routes/home.js";
@@ -36,7 +37,8 @@ runner.runMigrations(migrations);
       (() => {
         throw new Error("SEED_PASSWORD environment variable is required when seeding the database");
       })();
-    createUser(db, seedUser, seedPass);
+    const user = createUser(db, seedUser, seedPass, true);
+    createDefaultAttendeeForUser(db, user.id, user.username);
     console.log(`Seeded default user "${seedUser}". Change the password after first login.`);
   }
 }
@@ -52,9 +54,14 @@ app.use("*", async (c, next) => {
     return next();
   }
   const token = getCookie(c, SESSION_COOKIE_NAME);
-  if (!token || !getValidSession(db, token)) {
+  if (!token) {
     return c.redirect("/login");
   }
+  const user = getUserForValidSessionToken(db, token);
+  if (!user) {
+    return c.redirect("/login");
+  }
+  c.set("currentUser", user);
   return next();
 });
 
@@ -100,6 +107,7 @@ app.route("/", createHomeRoutes());
 app.route("/attendees", createAttendeeRoutes(db));
 app.route("/cockpit", createCockpitRoutes(db));
 app.route("/flights", createFlightRoutes(db));
+app.route("/", createMeRoutes(db));
 
 serve(
   {

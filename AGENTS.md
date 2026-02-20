@@ -78,16 +78,19 @@ a factory function `createXRoutes(db)` that returns a Hono sub-app.
 
 - src/routes/login.tsx: LoginPage component; GET /login, POST /login, POST
   /logout. Mounted at /.
-- src/routes/home.tsx: IndexPage component; GET /, POST /attendee. Mounted at /.
+- src/routes/home.tsx: IndexPage component; GET /, POST /attendee. For
+  non-super users GET / redirects to /me. Mounted at /.
 - src/routes/attendee.tsx: AttendeePage + AttendeeForm components; GET/PUT
-  /attendees/:name, POST /attendees/:name/delete. Mounted at /attendees.
+  /attendees/:username (super-user or self), plus /me redirect route
+  (GET /me -> /attendees/:username). Mounted at /attendees and /.
 - src/routes/cockpit.tsx: CockpitPage + CockpitAttendeeListSection +
-  AttendeeAccordion components; GET /cockpit, POST /cockpit/attendees, POST
+  AttendeeAccordion components; GET /cockpit, POST /cockpit/users, POST
   /cockpit/attendees/:id/flights, POST
-  /cockpit/attendees/:id/flights/:flightId/remove. Mounted at /cockpit.
+  /cockpit/attendees/:id/flights/:flightId/remove. Entire module is
+  super-user-only. Mounted at /cockpit.
 - src/routes/flights.tsx: FlightsOverviewPage + FlightEditPage +
   FlightPassengersPage + FlightPassengersListSection components + flight parsing
-  utilities; all /flights/* routes. Mounted at /flights.
+  utilities; all /flights/\* routes. Mounted at /flights.
 
 ### Shared modules
 
@@ -107,8 +110,13 @@ a factory function `createXRoutes(db)` that returns a Hono sub-app.
 - Session cookie (httpOnly, 90-day expiry) checked by middleware on every
   request except /login and /static/\*.
 - On first startup, a seed user is created from SEED_USERNAME / SEED_PASSWORD
-  env vars. Both are REQUIRED and throw if missing (no defaults).
-- User management is done directly in SQLite (no admin UI).
+  env vars. Both are REQUIRED and throw if missing (no defaults). The seeded
+  user is created as a super user.
+- Access model: only super users can access /, /cockpit, and /attendees/:username.
+  Normal users are redirected from / to /me, and /me redirects to their own
+  /attendees/:username profile.
+- User management is available in cockpit (create user with password) and in
+  SQLite directly.
 - The app operator acts as the password reset mechanism.
 
 ### Config
@@ -158,7 +166,8 @@ package.json, public/, src/, tsconfig.json
   src/migrations.ts.
 - Auth module: src/auth.ts; session cookie name is "session".
 - Seed user: created in src/index.tsx startup block from SEED_USERNAME /
-  SEED_PASSWORD env vars (both required, throw if missing).
+  SEED_PASSWORD env vars (both required, throw if missing) and marked as
+  super user.
 - Locale helper: getLocale(c: Context) exported from src/i18n.ts.
 - Shared Zod schemas: src/schemas.ts (idParamSchema, attendeeNameFormSchema).
 

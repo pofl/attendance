@@ -10,6 +10,7 @@ export interface Translations {
     notFound: string;
     nav: {
       home: string;
+      me: string;
       cockpit: string;
       flightsOverview: string;
       logout: string;
@@ -57,9 +58,13 @@ export interface Translations {
   cockpitPage: {
     title: string;
     createNew: string;
-    name: string;
-    namePlaceholder: string;
+    username: string;
+    usernamePlaceholder: string;
+    password: string;
+    passwordPlaceholder: string;
     createButton: string;
+    userCreated: string;
+    userCreateFailed: string;
     existingAttendees: string;
     noAttendees: string;
     flightsTitle: string;
@@ -140,6 +145,7 @@ const en_US: Translations = {
     notFound: "Not Found",
     nav: {
       home: "Home",
+      me: "Me",
       cockpit: "Cockpit",
       flightsOverview: "Flights",
       logout: "Logout",
@@ -156,8 +162,8 @@ const en_US: Translations = {
   },
   indexPage: {
     title: "Attendance",
-    enterName: "Enter attendee name",
-    namePlaceholder: "Name",
+    enterName: "Enter username",
+    namePlaceholder: "Username",
     go: "Go",
   },
   attendeePage: {
@@ -185,11 +191,15 @@ const en_US: Translations = {
     },
   },
   cockpitPage: {
-    title: "Cockpit - All Attendees",
-    createNew: "Create New Attendee",
-    name: "Name",
-    namePlaceholder: "Enter attendee name",
-    createButton: "Create Attendee",
+    title: "Cockpit - All Users",
+    createNew: "Create New User",
+    username: "Username",
+    usernamePlaceholder: "Enter username",
+    password: "Password",
+    passwordPlaceholder: "Enter password",
+    createButton: "Create User",
+    userCreated: "User created.",
+    userCreateFailed: "Could not create user.",
     existingAttendees: "Existing Attendees",
     noAttendees: "No attendees found.",
     flightsTitle: "Flights",
@@ -263,6 +273,7 @@ const de_DE: Translations = {
     notFound: "Nicht gefunden",
     nav: {
       home: "Start",
+      me: "Ich",
       cockpit: "Cockpit",
       flightsOverview: "Flüge",
       logout: "Abmelden",
@@ -279,8 +290,8 @@ const de_DE: Translations = {
   },
   indexPage: {
     title: "Anwesenheit",
-    enterName: "Teilnehmername eingeben",
-    namePlaceholder: "Name",
+    enterName: "Benutzernamen eingeben",
+    namePlaceholder: "Benutzername",
     go: "Los",
   },
   attendeePage: {
@@ -308,11 +319,15 @@ const de_DE: Translations = {
     },
   },
   cockpitPage: {
-    title: "Cockpit - Alle Teilnehmer",
-    createNew: "Neuen Teilnehmer erstellen",
-    name: "Name",
-    namePlaceholder: "Teilnehmername eingeben",
-    createButton: "Teilnehmer erstellen",
+    title: "Cockpit - Alle Benutzer",
+    createNew: "Neuen Benutzer erstellen",
+    username: "Benutzername",
+    usernamePlaceholder: "Benutzernamen eingeben",
+    password: "Passwort",
+    passwordPlaceholder: "Passwort eingeben",
+    createButton: "Benutzer erstellen",
+    userCreated: "Benutzer erstellt.",
+    userCreateFailed: "Benutzer konnte nicht erstellt werden.",
     existingAttendees: "Vorhandene Teilnehmer",
     noAttendees: "Keine Teilnehmer gefunden.",
     flightsTitle: "Flüge",

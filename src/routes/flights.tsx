@@ -20,6 +20,7 @@ import {
   type FlightRecord,
 } from "../repository.js";
 import { idParamSchema } from "../schemas.js";
+import { getCurrentUser } from "../utils/authz.js";
 import { formatArrivalDateTime, formatDateForInput, formatDepartureDateTime } from "../utils/flightFormat.js";
 import { zValidator } from "../validator-wrapper.js";
 
@@ -170,14 +171,15 @@ const FlightPassengersListSection: FC<{
 const FlightsOverviewPage: FC<{
   locale: Locale;
   flights: FlightAggregate[];
+  isSuperUser: boolean;
   message?: string | null;
   messageType?: "success" | "error";
-}> = ({ locale, flights, message, messageType = "success" }) => {
+}> = ({ locale, flights, isSuperUser, message, messageType = "success" }) => {
   const t = getTranslations(locale).flightsOverviewPage;
   const flightLabels = getTranslations(locale).flightForm;
   const messageClass = messageType === "error" ? "error" : "text-success";
   return (
-    <Layout locale={locale} currentPath="/flights">
+    <Layout locale={locale} currentPath="/flights" isSuperUser={isSuperUser}>
       <h1>{t.title}</h1>
 
       {flights.length === 0 ? (
@@ -301,16 +303,17 @@ const FlightsOverviewPage: FC<{
 const FlightEditPage: FC<{
   locale: Locale;
   flight: FlightRecord;
+  isSuperUser: boolean;
   message?: string | null;
   messageType?: "success" | "error";
-}> = ({ locale, flight, message, messageType = "success" }) => {
+}> = ({ locale, flight, isSuperUser, message, messageType = "success" }) => {
   const t = getTranslations(locale);
   const labels = t.flightForm;
   const editLabels = t.flightEditPage;
   const messageClass = messageType === "error" ? "error" : "text-success";
 
   return (
-    <Layout locale={locale} currentPath={`/flights/${flight.id}/edit`}>
+    <Layout locale={locale} currentPath={`/flights/${flight.id}/edit`} isSuperUser={isSuperUser}>
       <h1>{editLabels.title}</h1>
 
       <section class="card">
@@ -376,10 +379,11 @@ const FlightPassengersPage: FC<{
   flight: FlightRecord;
   attendees: AttendeeRecord[];
   passengers: AttendeeRecord[];
-}> = ({ locale, flight, attendees, passengers }) => {
+  isSuperUser: boolean;
+}> = ({ locale, flight, attendees, passengers, isSuperUser }) => {
   const t = getTranslations(locale).flightPassengersPage;
   return (
-    <Layout locale={locale} currentPath={`/flights/${flight.id}/passengers`}>
+    <Layout locale={locale} currentPath={`/flights/${flight.id}/passengers`} isSuperUser={isSuperUser}>
       <h1>{t.title}</h1>
 
       <section class="card mb-3">
@@ -448,14 +452,15 @@ export const createFlightRoutes = (db: Database) => {
 
   app.get("/", async (c) => {
     const locale = getLocale(c);
+    const user = getCurrentUser(c);
     const t = getTranslations(locale);
     try {
       const flights = getFlightAggregates(db);
-      return c.html(<FlightsOverviewPage flights={flights} locale={locale} />);
+      return c.html(<FlightsOverviewPage flights={flights} locale={locale} isSuperUser={user.is_superuser} />);
     } catch (e) {
       console.error(e);
       return c.html(
-        <Layout locale={locale} currentPath="/flights">
+        <Layout locale={locale} currentPath="/flights" isSuperUser={user.is_superuser}>
           <p class="error">{t.common.error}</p>
         </Layout>,
         500
@@ -465,23 +470,24 @@ export const createFlightRoutes = (db: Database) => {
 
   app.get("/:id/edit", zValidator("param", idParamSchema), async (c) => {
     const locale = getLocale(c);
+    const user = getCurrentUser(c);
     const t = getTranslations(locale);
     try {
       const { id } = c.req.valid("param");
       const flight = getFlightById(db, id);
       if (!flight) {
         return c.html(
-          <Layout locale={locale} currentPath="/flights">
+          <Layout locale={locale} currentPath="/flights" isSuperUser={user.is_superuser}>
             <p class="error">{t.common.notFound}</p>
           </Layout>,
           404
         );
       }
-      return c.html(<FlightEditPage locale={locale} flight={flight} />);
+      return c.html(<FlightEditPage locale={locale} flight={flight} isSuperUser={user.is_superuser} />);
     } catch (e) {
       console.error(e);
       return c.html(
-        <Layout locale={locale} currentPath="/flights">
+        <Layout locale={locale} currentPath="/flights" isSuperUser={user.is_superuser}>
           <p class="error">{t.common.error}</p>
         </Layout>,
         500
@@ -491,6 +497,7 @@ export const createFlightRoutes = (db: Database) => {
 
   app.post("/", zValidator("form", flightFormSchema), async (c) => {
     const locale = getLocale(c);
+    const user = getCurrentUser(c);
     const t = getTranslations(locale);
     try {
       const formData = c.req.valid("form");
@@ -513,7 +520,13 @@ export const createFlightRoutes = (db: Database) => {
       if (!flight) {
         const flights = getFlightAggregates(db);
         return c.html(
-          <FlightsOverviewPage locale={locale} flights={flights} message={t.common.error} messageType="error" />,
+          <FlightsOverviewPage
+            locale={locale}
+            flights={flights}
+            isSuperUser={user.is_superuser}
+            message={t.common.error}
+            messageType="error"
+          />,
           400
         );
       }
@@ -523,7 +536,13 @@ export const createFlightRoutes = (db: Database) => {
       console.error(e);
       const flights = getFlightAggregates(db);
       return c.html(
-        <FlightsOverviewPage locale={locale} flights={flights} message={t.common.error} messageType="error" />,
+        <FlightsOverviewPage
+          locale={locale}
+          flights={flights}
+          isSuperUser={user.is_superuser}
+          message={t.common.error}
+          messageType="error"
+        />,
         500
       );
     }
@@ -531,6 +550,7 @@ export const createFlightRoutes = (db: Database) => {
 
   app.post("/:id", zValidator("param", idParamSchema), zValidator("form", flightFormSchema), async (c) => {
     const locale = getLocale(c);
+    const user = getCurrentUser(c);
     const t = getTranslations(locale);
     try {
       const { id } = c.req.valid("param");
@@ -542,14 +562,20 @@ export const createFlightRoutes = (db: Database) => {
         const existing = getFlightById(db, id);
         if (!existing) {
           return c.html(
-            <Layout locale={locale} currentPath="/flights">
+            <Layout locale={locale} currentPath="/flights" isSuperUser={user.is_superuser}>
               <p class="error">{t.common.notFound}</p>
             </Layout>,
             404
           );
         }
         return c.html(
-          <FlightEditPage locale={locale} flight={existing} message={t.common.error} messageType="error" />,
+          <FlightEditPage
+            locale={locale}
+            flight={existing}
+            isSuperUser={user.is_superuser}
+            message={t.common.error}
+            messageType="error"
+          />,
           400
         );
       }
@@ -562,7 +588,13 @@ export const createFlightRoutes = (db: Database) => {
         const existing = getFlightById(db, id);
         if (existing) {
           return c.html(
-            <FlightEditPage locale={locale} flight={existing} message={t.common.error} messageType="error" />,
+            <FlightEditPage
+              locale={locale}
+              flight={existing}
+              isSuperUser={user.is_superuser}
+              message={t.common.error}
+              messageType="error"
+            />,
             500
           );
         }
@@ -573,6 +605,7 @@ export const createFlightRoutes = (db: Database) => {
 
   app.post("/:id/delete", zValidator("param", idParamSchema), async (c) => {
     const locale = getLocale(c);
+    const user = getCurrentUser(c);
     const t = getTranslations(locale);
     try {
       const { id } = c.req.valid("param");
@@ -585,7 +618,13 @@ export const createFlightRoutes = (db: Database) => {
         const flight = getFlightById(db, id);
         if (flight) {
           return c.html(
-            <FlightEditPage locale={locale} flight={flight} message={t.common.error} messageType="error" />,
+            <FlightEditPage
+              locale={locale}
+              flight={flight}
+              isSuperUser={user.is_superuser}
+              message={t.common.error}
+              messageType="error"
+            />,
             500
           );
         }
@@ -596,13 +635,14 @@ export const createFlightRoutes = (db: Database) => {
 
   app.get("/:id/passengers", zValidator("param", idParamSchema), async (c) => {
     const locale = getLocale(c);
+    const user = getCurrentUser(c);
     const t = getTranslations(locale);
     try {
       const { id } = c.req.valid("param");
       const flight = getFlightById(db, id);
       if (!flight) {
         return c.html(
-          <Layout locale={locale} currentPath="/flights">
+          <Layout locale={locale} currentPath="/flights" isSuperUser={user.is_superuser}>
             <p class="error">{t.common.notFound}</p>
           </Layout>,
           404
@@ -611,12 +651,18 @@ export const createFlightRoutes = (db: Database) => {
       const attendees = getAllAttendees(db);
       const passengers = getPassengersForFlight(db, id);
       return c.html(
-        <FlightPassengersPage locale={locale} flight={flight} attendees={attendees} passengers={passengers} />
+        <FlightPassengersPage
+          locale={locale}
+          flight={flight}
+          attendees={attendees}
+          passengers={passengers}
+          isSuperUser={user.is_superuser}
+        />
       );
     } catch (e) {
       console.error(e);
       return c.html(
-        <Layout locale={locale} currentPath="/flights">
+        <Layout locale={locale} currentPath="/flights" isSuperUser={user.is_superuser}>
           <p class="error">{t.common.error}</p>
         </Layout>,
         500

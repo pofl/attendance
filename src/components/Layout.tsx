@@ -7,6 +7,7 @@ interface LayoutProps {
   locale?: Locale;
   currentPath?: string;
   showLanguageToggle?: boolean;
+  isSuperUser?: boolean;
 }
 
 export const Layout: FC<LayoutProps> = (props) => {
@@ -14,6 +15,7 @@ export const Layout: FC<LayoutProps> = (props) => {
   const t = getTranslations(locale);
   const showToggle = props.showLanguageToggle !== false;
   const currentPath = props.currentPath ?? "";
+  const isSuperUser = props.isSuperUser ?? false;
   const isActive = (path: string): boolean => currentPath === path;
 
   return (
@@ -29,12 +31,20 @@ export const Layout: FC<LayoutProps> = (props) => {
       <body>
         {showToggle && props.currentPath && <LanguageToggle locale={locale} currentPath={props.currentPath} />}
         <nav class="nav">
-          <a href="/" class={isActive("/") ? "active" : ""}>
-            {t.common.nav.home}
-          </a>
-          <a href="/cockpit" class={isActive("/cockpit") ? "active" : ""}>
-            {t.common.nav.cockpit}
-          </a>
+          {isSuperUser ? (
+            <>
+              <a href="/" class={isActive("/") ? "active" : ""}>
+                {t.common.nav.home}
+              </a>
+              <a href="/cockpit" class={isActive("/cockpit") ? "active" : ""}>
+                {t.common.nav.cockpit}
+              </a>
+            </>
+          ) : (
+            <a href="/me" class={isActive("/me") ? "active" : ""}>
+              {t.common.nav.me}
+            </a>
+          )}
           <a href="/flights" class={isActive("/flights") ? "active" : ""}>
             {t.common.nav.flightsOverview}
           </a>

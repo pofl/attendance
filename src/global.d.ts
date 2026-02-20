@@ -1,4 +1,5 @@
 import "typed-htmx";
+import type { UserRecord } from "./auth.js";
 
 // A demo of how to augment foreign types with htmx attributes.
 // In this case, Hono sources its types from its own namespace, so we do the same
@@ -6,5 +7,11 @@ import "typed-htmx";
 declare module "hono/jsx" {
   namespace JSX {
     interface HTMLAttributes extends HtmxAttributes {}
+  }
+}
+
+declare module "hono" {
+  interface ContextVariableMap {
+    currentUser: UserRecord;
   }
 }

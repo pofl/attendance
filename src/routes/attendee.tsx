@@ -6,23 +6,26 @@ import { AttendeeFlightsSection } from "../components/AttendeeFlightsSection.js"
 import { Layout } from "../components/Layout.js";
 import { getLocale, getTranslations, type Locale } from "../i18n.js";
 import {
-  deleteAttendeeByName,
+  addPassengerToFlight,
   getAllFlights,
-  getAttendeeByName,
+  getAttendeeByUsername,
   getFlightsForAttendee,
+  removePassengerFromFlight,
   upsertAttendee,
   type Attendee,
   type AttendeeRecord,
   type FlightRecord,
 } from "../repository.js";
+import { getCurrentUser } from "../utils/authz.js";
 import { zValidator } from "../validator-wrapper.js";
 
 // ── Components ──
 
 const AttendeeForm: FC<{ attendee: AttendeeRecord; locale?: string }> = ({ attendee, locale }) => {
   const t = getTranslations(locale ?? attendee.locale ?? "en_US").attendeeForm;
+  const submitPath = `/attendees/${encodeURIComponent(attendee.name)}`;
   return (
-    <form hx-put={`/attendees/${encodeURIComponent(attendee.name)}`} hx-swap="outerHTML">
+    <form hx-put={submitPath} hx-swap="outerHTML">
       <label>
         {t.locale}:
         <select name="locale">
@@ -79,10 +82,12 @@ const AttendeePage: FC<{
   flights: FlightRecord[];
   allFlights: FlightRecord[];
   locale: Locale;
-}> = ({ attendee, flights, allFlights, locale }) => {
+  currentPath: string;
+  isSuperUser: boolean;
+}> = ({ attendee, flights, allFlights, locale, currentPath, isSuperUser }) => {
   const t = getTranslations(locale);
   return (
-    <Layout locale={locale} currentPath={`/attendees/${encodeURIComponent(attendee.name)}`}>
+    <Layout locale={locale} currentPath={currentPath} isSuperUser={isSuperUser}>
       <h1>
         {t.attendeePage.title}: {attendee.name}
       </h1>
@@ -93,21 +98,14 @@ const AttendeePage: FC<{
         <AttendeeForm attendee={attendee} locale={locale} />
       </article>
       <AttendeeFlightsSection attendee={attendee} flights={flights} allFlights={allFlights} locale={locale} />
-      <button
-        type="button"
-        class="button-secondary mt-2"
-        hx-post={`/attendees/${encodeURIComponent(attendee.name)}/delete`}
-      >
-        {t.attendeeForm.delete}
-      </button>
     </Layout>
   );
 };
 
 // ── Schemas ──
 
-const nameParamSchema = z.object({
-  name: z.string().trim().min(1),
+const usernameParamSchema = z.object({
+  username: z.string().trim().min(1),
 });
 
 const attendeeUpdateFormSchema = z.object({
@@ -117,23 +115,37 @@ const attendeeUpdateFormSchema = z.object({
   dietary_requirements: z.string().optional(),
 });
 
+const flightIdParamSchema = z.object({
+  flightId: z.coerce.number().int().positive(),
+});
+
+const flightAssignmentFormSchema = z.object({
+  flight_id: z.coerce.number().int().positive(),
+});
+
 // ── Routes (mounted at /attendees) ──
 
 export const createAttendeeRoutes = (db: Database) => {
   const app = new Hono();
 
-  app.get("/:name", zValidator("param", nameParamSchema), async (c) => {
-    const { name } = c.req.valid("param");
+  app.get("/:username", zValidator("param", usernameParamSchema), async (c) => {
+    const user = getCurrentUser(c);
+    const { username } = c.req.valid("param");
+    const canAccess = user.is_superuser || user.username === username;
+    if (!canAccess) {
+      return c.redirect("/me");
+    }
+
     const locale = getLocale(c);
     const t = getTranslations(locale);
     try {
-      const attendee = getAttendeeByName(db, name);
+      const attendee = getAttendeeByUsername(db, username);
       if (!attendee) {
         return c.html(
-          <Layout locale={locale} currentPath={`/attendees/${encodeURIComponent(name)}`}>
+          <Layout locale={locale} currentPath={`/attendees/${encodeURIComponent(username)}`} isSuperUser>
             <h1>{t.attendeePage.notFoundTitle}</h1>
             <p class="error">
-              {t.attendeePage.notFoundMessage}: {name}
+              {t.attendeePage.notFoundMessage}: {username}
             </p>
           </Layout>,
           404
@@ -141,11 +153,20 @@ export const createAttendeeRoutes = (db: Database) => {
       }
       const flights = getFlightsForAttendee(db, attendee.id);
       const allFlights = getAllFlights(db);
-      return c.html(<AttendeePage attendee={attendee} flights={flights} allFlights={allFlights} locale={locale} />);
+      return c.html(
+        <AttendeePage
+          attendee={attendee}
+          flights={flights}
+          allFlights={allFlights}
+          locale={locale}
+          currentPath={`/attendees/${encodeURIComponent(username)}`}
+          isSuperUser={user.is_superuser}
+        />
+      );
     } catch (e) {
       console.error(e);
       return c.html(
-        <Layout locale={locale} currentPath={`/attendees/${encodeURIComponent(name)}`}>
+        <Layout locale={locale} currentPath={`/attendees/${encodeURIComponent(username)}`} isSuperUser>
           <p class="error">{t.common.error}</p>
         </Layout>,
         500
@@ -153,51 +174,172 @@ export const createAttendeeRoutes = (db: Database) => {
     }
   });
 
-  app.put("/:name", zValidator("param", nameParamSchema), zValidator("form", attendeeUpdateFormSchema), async (c) => {
-    const { name } = c.req.valid("param");
-    const locale = getLocale(c);
-    const t = getTranslations(locale);
-    try {
-      const formData = c.req.valid("form");
+  app.put(
+    "/:username",
+    zValidator("param", usernameParamSchema),
+    zValidator("form", attendeeUpdateFormSchema),
+    async (c) => {
+      const user = getCurrentUser(c);
+      const { username } = c.req.valid("param");
+      const canAccess = user.is_superuser || user.username === username;
+      if (!canAccess) {
+        return c.redirect("/me");
+      }
 
-      const attendee: Attendee = {
-        name,
-        locale: formData.locale,
-        passport_status: formData.passport_status,
-        visa_status: formData.visa_status,
-        dietary_requirements: formData.dietary_requirements?.trim() || null,
-      };
+      const locale = getLocale(c);
+      const t = getTranslations(locale);
+      try {
+        const formData = c.req.valid("form");
+        const existing = getAttendeeByUsername(db, username);
+        if (!existing) {
+          return c.html(<p class="error">{t.common.notFound}</p>, 404);
+        }
 
-      upsertAttendee(db, attendee);
+        const attendee: Attendee = {
+          user_id: existing.user_id,
+          name: username,
+          locale: formData.locale,
+          passport_status: formData.passport_status,
+          visa_status: formData.visa_status,
+          dietary_requirements: formData.dietary_requirements?.trim() || null,
+        };
 
-      const updated = getAttendeeByName(db, name);
-      if (!updated) {
+        upsertAttendee(db, attendee);
+
+        const updated = getAttendeeByUsername(db, username);
+        if (!updated) {
+          return c.html(<p class="error">{t.common.error}</p>, 500);
+        }
+        return c.html(<AttendeeForm attendee={updated} locale={locale} />);
+      } catch (e) {
+        console.error(e);
         return c.html(<p class="error">{t.common.error}</p>, 500);
       }
-      return c.html(<AttendeeForm attendee={updated} locale={locale} />);
-    } catch (e) {
-      console.error(e);
-      return c.html(<p class="error">{t.common.error}</p>, 500);
     }
-  });
+  );
 
-  app.post("/:name/delete", zValidator("param", nameParamSchema), async (c) => {
+  app.post(
+    "/:username/flights",
+    zValidator("param", usernameParamSchema),
+    zValidator("form", flightAssignmentFormSchema),
+    async (c) => {
+      const user = getCurrentUser(c);
+      const { username } = c.req.valid("param");
+      const canAccess = user.is_superuser || user.username === username;
+      if (!canAccess) {
+        return c.redirect("/me");
+      }
+
+      const locale = getLocale(c);
+      const t = getTranslations(locale);
+      try {
+        const attendee = getAttendeeByUsername(db, username);
+        if (!attendee) {
+          return c.html("", 404);
+        }
+        const { flight_id: flightId } = c.req.valid("form");
+        addPassengerToFlight(db, flightId, attendee.id);
+        const flights = getFlightsForAttendee(db, attendee.id);
+        const allFlights = getAllFlights(db);
+        return c.html(
+          <AttendeeFlightsSection attendee={attendee} flights={flights} allFlights={allFlights} locale={locale} />
+        );
+      } catch (e) {
+        console.error(e);
+        const attendee = getAttendeeByUsername(db, username);
+        if (!attendee) {
+          return c.html("", 404);
+        }
+        const flights = getFlightsForAttendee(db, attendee.id);
+        const allFlights = getAllFlights(db);
+        return c.html(
+          <AttendeeFlightsSection
+            attendee={attendee}
+            flights={flights}
+            allFlights={allFlights}
+            locale={locale}
+            message={t.common.error}
+            messageType="error"
+          />,
+          500
+        );
+      }
+    }
+  );
+
+  app.post(
+    "/:username/flights/:flightId/remove",
+    zValidator("param", usernameParamSchema.merge(flightIdParamSchema)),
+    async (c) => {
+      const user = getCurrentUser(c);
+      const { username, flightId } = c.req.valid("param");
+      const canAccess = user.is_superuser || user.username === username;
+      if (!canAccess) {
+        return c.redirect("/me");
+      }
+
+      const locale = getLocale(c);
+      const t = getTranslations(locale);
+      try {
+        const attendee = getAttendeeByUsername(db, username);
+        if (!attendee) {
+          return c.html("", 404);
+        }
+        removePassengerFromFlight(db, flightId, attendee.id);
+        const flights = getFlightsForAttendee(db, attendee.id);
+        const allFlights = getAllFlights(db);
+        return c.html(
+          <AttendeeFlightsSection attendee={attendee} flights={flights} allFlights={allFlights} locale={locale} />
+        );
+      } catch (e) {
+        console.error(e);
+        const attendee = getAttendeeByUsername(db, username);
+        if (!attendee) {
+          return c.html("", 404);
+        }
+        const flights = getFlightsForAttendee(db, attendee.id);
+        const allFlights = getAllFlights(db);
+        return c.html(
+          <AttendeeFlightsSection
+            attendee={attendee}
+            flights={flights}
+            allFlights={allFlights}
+            locale={locale}
+            message={t.common.error}
+            messageType="error"
+          />,
+          500
+        );
+      }
+    }
+  );
+
+  app.post("/:username/delete", zValidator("param", usernameParamSchema), async (c) => {
     const locale = getLocale(c);
     const t = getTranslations(locale);
     try {
-      const { name } = c.req.valid("param");
-      deleteAttendeeByName(db, name);
-      return c.redirect("/cockpit");
+      return c.html(<p class="error">{t.common.notFound}</p>, 404);
     } catch (e) {
       console.error(e);
-      const name = c.req.param("name");
+      const username = c.req.param("username");
       return c.html(
-        <Layout locale={locale} currentPath={`/attendees/${encodeURIComponent(name)}`}>
+        <Layout locale={locale} currentPath={`/attendees/${encodeURIComponent(username)}`}>
           <p class="error">{t.common.error}</p>
         </Layout>,
         500
       );
     }
+  });
+
+  return app;
+};
+
+export const createMeRoutes = (db: Database) => {
+  const app = new Hono();
+
+  app.get("/me", async (c) => {
+    const user = getCurrentUser(c);
+    return c.redirect(`/attendees/${encodeURIComponent(user.username)}`);
   });
 
   return app;

@@ -7,6 +7,7 @@ export interface UserRecord {
   updated_at: string;
   username: string;
   password: string;
+  is_superuser: boolean;
 }
 
 export interface SessionRecord {
@@ -22,24 +23,45 @@ function generateToken(): string {
   return crypto.randomBytes(32).toString("hex");
 }
 
+function parseUserRecord(row: Record<string, unknown>): UserRecord {
+  return {
+    id: Number(row.id),
+    created_at: String(row.created_at),
+    updated_at: String(row.updated_at),
+    username: String(row.username),
+    password: String(row.password),
+    is_superuser: Number(row.is_superuser) === 1,
+  };
+}
+
 // ── User helpers ──
 
 export function getUserByUsername(db: Database, username: string): UserRecord | null {
   const row = db.prepare("SELECT * FROM users WHERE username = ?").get(username);
-  return row ? (row as UserRecord) : null;
+  return row ? parseUserRecord(row as Record<string, unknown>) : null;
 }
 
 export function getUserById(db: Database, id: number): UserRecord | null {
   const row = db.prepare("SELECT * FROM users WHERE id = ?").get(id);
-  return row ? (row as UserRecord) : null;
+  return row ? parseUserRecord(row as Record<string, unknown>) : null;
 }
 
-export function createUser(db: Database, username: string, password: string): void {
-  db.prepare("INSERT INTO users (username, password) VALUES (?, ?)").run(username, password);
+export function createUser(db: Database, username: string, password: string, isSuperUser = false): UserRecord {
+  db.prepare("INSERT INTO users (username, password, is_superuser) VALUES (?, ?, ?)").run(
+    username,
+    password,
+    isSuperUser ? 1 : 0
+  );
+  const user = getUserByUsername(db, username);
+  if (!user) {
+    throw new Error(`Could not create user ${username}`);
+  }
+  return user;
 }
 
 export function getAllUsers(db: Database): UserRecord[] {
-  return db.prepare("SELECT * FROM users ORDER BY username ASC").all() as UserRecord[];
+  const rows = db.prepare("SELECT * FROM users ORDER BY username ASC").all() as Record<string, unknown>[];
+  return rows.map((row) => parseUserRecord(row));
 }
 
 // ── Session helpers ──
@@ -64,6 +86,14 @@ export function deleteSession(db: Database, token: string): void {
 
 export function deleteExpiredSessions(db: Database): void {
   db.prepare("DELETE FROM sessions WHERE expires_at <= ?").run(new Date().toISOString());
+}
+
+export function getUserForValidSessionToken(db: Database, token: string): UserRecord | null {
+  const session = getValidSession(db, token);
+  if (!session) {
+    return null;
+  }
+  return getUserById(db, session.user_id);
 }
 
 // ── Authentication ──

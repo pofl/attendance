@@ -15,6 +15,7 @@ export const AttendeeFlightsSection: FC<{
   const messageClass = messageType === "error" ? "error" : "text-success";
   const assignedIds = new Set(flights.map((flight) => flight.id));
   const availableFlights = allFlights.filter((flight) => !assignedIds.has(flight.id));
+  const flightAssignmentPath = `/attendees/${encodeURIComponent(attendee.name)}/flights`;
 
   return (
     <section id={`attendee-flights-${attendee.id}`} class="card mt-2">
@@ -45,7 +46,7 @@ export const AttendeeFlightsSection: FC<{
                 <td>
                   <form
                     class="inline-form"
-                    hx-post={`/cockpit/attendees/${attendee.id}/flights/${flight.id}/remove`}
+                    hx-post={`${flightAssignmentPath}/${flight.id}/remove`}
                     hx-target={`#attendee-flights-${attendee.id}`}
                     hx-swap="outerHTML"
                   >
@@ -65,11 +66,7 @@ export const AttendeeFlightsSection: FC<{
         {availableFlights.length === 0 ? (
           <p class="text-muted">{t.cockpitPage.flightsNoAvailable}</p>
         ) : (
-          <form
-            hx-post={`/cockpit/attendees/${attendee.id}/flights`}
-            hx-target={`#attendee-flights-${attendee.id}`}
-            hx-swap="outerHTML"
-          >
+          <form hx-post={flightAssignmentPath} hx-target={`#attendee-flights-${attendee.id}`} hx-swap="outerHTML">
             <label>
               {t.cockpitPage.flightsSelectLabel}:
               <select name="flight_id" required>

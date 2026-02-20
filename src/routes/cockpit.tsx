@@ -2,22 +2,23 @@ import type { Database } from "better-sqlite3";
 import { Hono } from "hono";
 import type { FC } from "hono/jsx";
 import { z } from "zod";
+import { createUser } from "../auth.js";
 import { AttendeeFlightsSection } from "../components/AttendeeFlightsSection.js";
 import { Layout } from "../components/Layout.js";
 import { getLocale, getTranslations, type Locale } from "../i18n.js";
 import {
   addPassengerToFlight,
+  createDefaultAttendeeForUser,
   getAllAttendees,
   getAllFlights,
   getAttendeeById,
   getFlightsForAttendee,
   removePassengerFromFlight,
-  upsertAttendee,
-  type Attendee,
   type AttendeeRecord,
   type FlightRecord,
 } from "../repository.js";
-import { attendeeNameFormSchema, idParamSchema } from "../schemas.js";
+import { idParamSchema } from "../schemas.js";
+import { getCurrentUser } from "../utils/authz.js";
 import { formatArrivalDateTime, formatDepartureDateTime } from "../utils/flightFormat.js";
 import { zValidator } from "../validator-wrapper.js";
 
@@ -125,15 +126,19 @@ const CockpitAttendeeListSection: FC<{
 const CockpitPage: FC<{ attendees: AttendeeWithFlights[]; locale: Locale }> = ({ attendees, locale }) => {
   const t = getTranslations(locale);
   return (
-    <Layout locale={locale} currentPath="/cockpit">
+    <Layout locale={locale} currentPath="/cockpit" isSuperUser>
       <h1>{t.cockpitPage.title}</h1>
 
       <section class="card mb-3">
         <h2>{t.cockpitPage.createNew}</h2>
-        <form hx-post="/cockpit/attendees" hx-target="#cockpit-attendees" hx-swap="outerHTML">
+        <form hx-post="/cockpit/users" hx-target="#cockpit-attendees" hx-swap="outerHTML">
           <label>
-            {t.cockpitPage.name}:
-            <input type="text" name="name" required placeholder={t.cockpitPage.namePlaceholder} />
+            {t.cockpitPage.username}:
+            <input type="text" name="username" required placeholder={t.cockpitPage.usernamePlaceholder} />
+          </label>
+          <label>
+            {t.cockpitPage.password}:
+            <input type="password" name="password" required placeholder={t.cockpitPage.passwordPlaceholder} />
           </label>
           <button type="submit">{t.cockpitPage.createButton}</button>
         </form>
@@ -153,6 +158,11 @@ const flightIdParamSchema = z.object({
 
 const flightAssignmentFormSchema = z.object({
   flight_id: z.coerce.number().int().positive(),
+});
+
+const userCreateFormSchema = z.object({
+  username: z.string().trim().min(1),
+  password: z.string().min(1),
 });
 
 // ── Helpers ──
@@ -186,6 +196,11 @@ export const createCockpitRoutes = (db: Database) => {
   app.get("/", async (c) => {
     const locale = getLocale(c);
     const t = getTranslations(locale);
+    const user = getCurrentUser(c);
+    if (!user.is_superuser) {
+      return c.redirect("/me");
+    }
+
     try {
       const attendees = getAllAttendees(db);
       const attendeesWithFlights = attendees.map((attendee) => ({
@@ -196,7 +211,7 @@ export const createCockpitRoutes = (db: Database) => {
     } catch (e) {
       console.error(e);
       return c.html(
-        <Layout locale={locale} currentPath="/cockpit">
+        <Layout locale={locale} currentPath="/cockpit" isSuperUser={user.is_superuser}>
           <p class="error">{t.common.error}</p>
         </Layout>,
         500
@@ -204,23 +219,22 @@ export const createCockpitRoutes = (db: Database) => {
     }
   });
 
-  app.post("/attendees", zValidator("form", attendeeNameFormSchema), async (c) => {
+  app.post("/users", zValidator("form", userCreateFormSchema), async (c) => {
     const locale = getLocale(c);
+    const currentUser = getCurrentUser(c);
     const t = getTranslations(locale);
-    const { name } = c.req.valid("form");
+    if (!currentUser.is_superuser) {
+      return c.redirect("/me");
+    }
+
+    const { username, password } = c.req.valid("form");
     try {
-      const attendee: Attendee = {
-        name,
-        locale: "en_US",
-        passport_status: "none",
-        visa_status: "none",
-        dietary_requirements: null,
-      };
-      upsertAttendee(db, attendee);
-      return c.html(buildCockpitAttendeeList(db, locale));
+      const createdUser = createUser(db, username, password, false);
+      createDefaultAttendeeForUser(db, createdUser.id, createdUser.username);
+      return c.html(buildCockpitAttendeeList(db, locale, t.cockpitPage.userCreated, "success"));
     } catch (e) {
       console.error(e);
-      return c.html(buildCockpitAttendeeList(db, locale, t.common.error, "error"), 500);
+      return c.html(buildCockpitAttendeeList(db, locale, t.cockpitPage.userCreateFailed, "error"), 500);
     }
   });
 
@@ -231,6 +245,11 @@ export const createCockpitRoutes = (db: Database) => {
     async (c) => {
       const locale = getLocale(c);
       const t = getTranslations(locale);
+      const user = getCurrentUser(c);
+      if (!user.is_superuser) {
+        return c.redirect("/me");
+      }
+
       try {
         const { id: attendeeId } = c.req.valid("param");
         const { flight_id: flightId } = c.req.valid("form");
@@ -274,6 +293,11 @@ export const createCockpitRoutes = (db: Database) => {
   app.post("/attendees/:id/flights/:flightId/remove", zValidator("param", flightIdParamSchema), async (c) => {
     const locale = getLocale(c);
     const t = getTranslations(locale);
+    const user = getCurrentUser(c);
+    if (!user.is_superuser) {
+      return c.redirect("/me");
+    }
+
     try {
       const { id: attendeeId, flightId } = c.req.valid("param");
       removePassengerFromFlight(db, flightId, attendeeId);
