@@ -57,8 +57,9 @@ Documentation should be kept up to date with domain knowledge from user prompts.
 
 ### Entry point
 
-- src/index.tsx: Hono server, routes, server-side JSX rendering, HTMX endpoints,
-  and static file serving.
+- src/index.tsx: ~100 lines. Bootstrap only: dotenv config, DB open, migration
+  runner, seed user block, static file serving, auth middleware, HTMX redirect
+  middleware, POST /set-locale route, and five app.route() mounts.
 
 ### Database
 
@@ -69,20 +70,44 @@ Documentation should be kept up to date with domain knowledge from user prompts.
 - src/migrations.ts: ordered list of SQL migrations (attendees, flights,
   flight_passengers, users, sessions).
 
-### UI/Pages
+### Routes (per-page modules)
 
-- src/pages/\*.tsx: Layout + Login, Index, Attendee, Cockpit, Flight pages.
-- src/components/\*.tsx: AttendeeForm, LanguageToggle, etc.
-- src/i18n.ts: translations and locale helpers.
+Code is grouped by the web page it belongs to. Each module contains the page
+components, page-exclusive HTMX partial components, route handler schemas, and
+a factory function `createXRoutes(db)` that returns a Hono sub-app.
+
+- src/routes/login.tsx: LoginPage component; GET /login, POST /login, POST
+  /logout. Mounted at /.
+- src/routes/home.tsx: IndexPage component; GET /, POST /attendee. Mounted at /.
+- src/routes/attendee.tsx: AttendeePage + AttendeeForm components; GET/PUT
+  /attendees/:name, POST /attendees/:name/delete. Mounted at /attendees.
+- src/routes/cockpit.tsx: CockpitPage + CockpitAttendeeListSection +
+  AttendeeAccordion components; GET /cockpit, POST /cockpit/attendees, POST
+  /cockpit/attendees/:id/flights, POST
+  /cockpit/attendees/:id/flights/:flightId/remove. Mounted at /cockpit.
+- src/routes/flights.tsx: FlightsOverviewPage + FlightEditPage +
+  FlightPassengersPage + FlightPassengersListSection components + flight parsing
+  utilities; all /flights/* routes. Mounted at /flights.
+
+### Shared modules
+
+- src/schemas.ts: shared Zod schemas used across multiple route modules
+  (idParamSchema, attendeeNameFormSchema).
+- src/components/AttendeeFlightsSection.tsx: flight assignment widget used on
+  both the attendee page and cockpit page.
+- src/components/Layout.tsx: shared HTML shell with nav, scripts, language
+  toggle. Used by all pages except LoginPage.
+- src/components/LanguageToggle.tsx: locale switcher rendered inside Layout.
+- src/i18n.ts: translations, locale helpers, getLocale(c: Context).
 - public/styles.css: global styling served at /static.
 
 ### Auth
 
 - Plaintext password auth. Passwords stored unencrypted in the users table.
-- Session cookie (httpOnly, 30-day expiry) checked by middleware on every
+- Session cookie (httpOnly, 90-day expiry) checked by middleware on every
   request except /login and /static/\*.
 - On first startup, a seed user is created from SEED_USERNAME / SEED_PASSWORD
-  env vars (default: admin/admin).
+  env vars. Both are REQUIRED and throw if missing (no defaults).
 - User management is done directly in SQLite (no admin UI).
 - The app operator acts as the password reset mechanism.
 
@@ -115,27 +140,27 @@ package.json, public/, src/, tsconfig.json
 ## Next-level directory listing
 
 - public/: styles.css
-- src/: db.ts, global.d.ts, i18n.ts, index.tsx, migrate.ts, migrations.ts,
-  auth.ts, repository.ts, run-migrate.ts, validator-wrapper.ts, components/,
-  pages/, utils/
-- src/components/: AttendeeFlightsSection.tsx, AttendeeForm.tsx,
-  CockpitAttendeeListSection.tsx, FlightPassengersListSection.tsx, index.ts,
-  LanguageToggle.tsx
-- src/pages/: AttendeePage.tsx, CockpitPage.tsx, FlightEditPage.tsx,
-  FlightPassengersPage.tsx, FlightsOverviewPage.tsx, IndexPage.tsx, Layout.tsx,
-  LoginPage.tsx, index.ts
+- src/: auth.ts, db.ts, global.d.ts, i18n.ts, index.tsx, migrate.ts,
+  migrations.ts, repository.ts, run-migrate.ts, schemas.ts, validator-wrapper.ts,
+  components/, routes/, utils/
+- src/components/: AttendeeFlightsSection.tsx, index.ts, LanguageToggle.tsx,
+  Layout.tsx
+- src/routes/: attendee.tsx, cockpit.tsx, flights.tsx, home.tsx, login.tsx
 - src/utils/: flightFormat.ts
 
 ## Key source snippets (for quick orientation)
 
 - Server entry: serve({ fetch: app.fetch, port: 3000 }) in src/index.tsx.
+- Route mounting: app.route("/", createLoginRoutes(db)) etc. in src/index.tsx.
 - DB open: new SQLite(process.env.DATABASE_PATH ?? "./data/attendance.db") in
   src/db.ts.
 - Migration table and runner: src/migrate.ts; migration list in
   src/migrations.ts.
 - Auth module: src/auth.ts; session cookie name is "session".
 - Seed user: created in src/index.tsx startup block from SEED_USERNAME /
-  SEED_PASSWORD env vars.
+  SEED_PASSWORD env vars (both required, throw if missing).
+- Locale helper: getLocale(c: Context) exported from src/i18n.ts.
+- Shared Zod schemas: src/schemas.ts (idParamSchema, attendeeNameFormSchema).
 
 ## Guidance for future agents
 
