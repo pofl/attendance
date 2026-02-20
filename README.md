@@ -26,7 +26,7 @@ docker push registry.fpolster.dev/attendance
 
 ## SQLite
 
-The app uses SQLite via better-sqlite3. The database file is configured with the `DATABASE_PATH` environment variable.
+The app uses SQLite. The database file is configured with the `DATABASE_PATH` environment variable.
 
 If you don't set it, the default is `./data/attendance.db`
 
@@ -37,7 +37,7 @@ The app uses a simple username/password authentication system. **Passwords are s
 ### How it works
 
 - Every route (except `/login` and `/static/*`) requires an active session.
-- Sessions are stored in SQLite and validated via an `httpOnly` cookie.
+- Sessions are persisted in SQLite and validated via an `httpOnly` cookie.
 - Sessions last 90 days.
 - The seeded user is a **super user**.
 - Only super users can access `/` (home), `/cockpit`, and `/attendees/:username`.
@@ -63,17 +63,6 @@ Set these environment variables **before the first start**. There are no default
 
 ### Managing users
 
-Super users can create users (with password) in the cockpit UI.
+Super users can create and manage users in the cockpit UI.
 
-You can still manage users via SQLite CLI:
-
-```sh
-# Add a user
-sqlite3 ./data/attendance.db "INSERT INTO users (username, password, is_superuser) VALUES ('alice', 'her-password', 0);"
-
-# Change a password (you are the password reset button)
-sqlite3 ./data/attendance.db "UPDATE users SET password = 'new-password' WHERE username = 'alice';"
-
-# List users
-sqlite3 ./data/attendance.db "SELECT id, username, is_superuser FROM users;"
-```
+If needed, users can also be managed directly in SQLite by an operator.
